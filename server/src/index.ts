@@ -8,7 +8,13 @@ fastify.register(require('fastify-cors'), {
 
 //const dbconnector = require('./db/db')
 //fastify.register(dbconnector)
-fastify.register(require('./routes/chatRoute'))
+
+const db = require('./queries')
+
+fastify.get('/users', db.getUsers)
+fastify.get('/users/username/:username', db.getUserByUsername)
+fastify.post('/user', db.createUser)
+
 
 // Run the server!
 const start = async () => {
