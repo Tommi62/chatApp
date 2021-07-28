@@ -55,7 +55,24 @@ const useUsers = () => {
         }
     };
 
-    return { getUsers, getUserAvailable, register };
+    const postLogin = async (inputs: Object) => {
+        const fetchOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(inputs),
+        };
+        try {
+            const result = await doFetch('/login', fetchOptions);
+            console.log('RegisterResult', result)
+            return result
+        } catch (e) {
+            alert(e.message);
+        }
+    };
+
+    return { getUsers, getUserAvailable, register, postLogin };
 };
 
 export { useUsers };

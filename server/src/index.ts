@@ -1,19 +1,39 @@
-
-// Require the framework and instantiate it
 const fastify = require('fastify')({ logger: true })
+const db = require('./queries')
 
 fastify.register(require('fastify-cors'), { 
   origin: "*",
 })
 
+fastify.register(require('./plugins/session'))
+
+
 //const dbconnector = require('./db/db')
 //fastify.register(dbconnector)
 
-const db = require('./queries')
-
 fastify.get('/users', db.getUsers)
 fastify.get('/users/username/:username', db.getUserByUsername)
-fastify.post('/user', db.createUser)
+fastify.post('/user', {
+  schema: {
+    body: {
+      type: 'object', required: ['username', 'password'], properties: {
+        username: { type: 'string' },
+        password: { type: 'string' },
+      }
+    }
+  }
+}, db.createUser)
+fastify.post('/login', {
+  schema: {
+    body: {
+      type: 'object', required: ['username', 'password'], properties: {
+        username: { type: 'string' },
+        password: { type: 'string' },
+      }
+    },
+  }
+}, db.login)
+fastify.get('/profile', db.getProfile)
 
 
 // Run the server!
