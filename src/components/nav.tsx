@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Link as RouterLink } from 'react-router-dom';
 import {
     AppBar,
@@ -7,6 +8,10 @@ import {
     Button,
 } from '@material-ui/core';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
+import { useUsers } from '../hooks/apiHooks';
+import { useContext, useEffect } from 'react';
+import { useState } from 'react';
+import { MediaContext } from '../contexts/mediaContext';
 
 const useStyles = makeStyles((theme) => ({
     appBar: {
@@ -41,6 +46,26 @@ const useStyles = makeStyles((theme) => ({
 
 const Nav = () => {
     const classes = useStyles();
+    const [logged, setLogged] = useState(false);
+    const { user, setUser } = useContext(MediaContext);
+    const { getIsLoggedIn } = useUsers();
+
+    useEffect(() => {
+        (async () => {
+            try {
+                console.log('NAV');
+                const isLoggedIn = await getIsLoggedIn()
+                if (isLoggedIn.success) {
+                    setLogged(true);
+                    setUser(isLoggedIn.id);
+                } else {
+                    setLogged(false);
+                }
+            } catch (e) {
+                console.log(e.message);
+            }
+        })();
+    }, [user]);
 
     return (
         <>
@@ -56,14 +81,34 @@ const Nav = () => {
                         <h2>ChatApp</h2>
                     </Link>
                     <div className={classes.itemPack}>
-                        <Button
-                            color="inherit"
-                            startIcon={<ExitToAppIcon />}
-                            component={RouterLink}
-                            to="/login"
-                        >
-                            Login
-                        </Button>
+                        {logged ? (
+                            <div>
+                                <Button
+                                    color="inherit"
+                                    component={RouterLink}
+                                    to="/logout"
+                                >
+                                    Logout
+                                </Button>
+                                <Button
+                                    color="inherit"
+                                    component={RouterLink}
+                                    to="/profile"
+                                >
+                                    Profile
+                                </Button>
+                            </div>
+                        ) : (
+                            <Button
+                                color="inherit"
+                                startIcon={<ExitToAppIcon />}
+                                component={RouterLink}
+                                to="/login"
+                            >
+                                Login
+                            </Button>
+                        )}
+
                     </div>
                 </Toolbar>
             </AppBar>

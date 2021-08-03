@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import config from '../config'
 
+interface Count {
+    value: number;
+}
 
 const doFetch = async (url: string, options = {}) => {
-    console.log('smthng');
     const response = await fetch(config.backendUrl + url, options);
     const json = await response.json();
     if (json.error) {
@@ -22,6 +25,7 @@ const useUsers = () => {
     const getUsers = async () => {
         const fetchOptions = {
             method: 'GET',
+            credentials: 'include',
         };
         try {
             return await doFetch('/users', fetchOptions);
@@ -45,6 +49,7 @@ const useUsers = () => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(inputs),
+            credentials: 'include',
         };
         try {
             const result = await doFetch('/user', fetchOptions);
@@ -55,6 +60,18 @@ const useUsers = () => {
         }
     };
 
+    const getIsLoggedIn = async () => {
+        const fetchOptions = {
+            method: 'GET',
+            credentials: 'include',
+        };
+        try {
+            return await doFetch('/isloggedin', fetchOptions);
+        } catch (e) {
+            throw new Error(e.message);
+        }
+    };
+
     const postLogin = async (inputs: Object) => {
         const fetchOptions = {
             method: 'POST',
@@ -62,17 +79,41 @@ const useUsers = () => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(inputs),
+            credentials: 'include',
         };
         try {
             const result = await doFetch('/login', fetchOptions);
-            console.log('RegisterResult', result)
             return result
         } catch (e) {
             alert(e.message);
         }
     };
 
-    return { getUsers, getUserAvailable, register, postLogin };
+    const logout = async () => {
+        const fetchOptions = {
+            method: 'DELETE',
+            credentials: 'include',
+        };
+        try {
+            return await doFetch('/logout', fetchOptions);
+        } catch (e) {
+            throw new Error(e.message);
+        }
+    }
+
+    const getProfile = async () => {
+        const fetchOptions = {
+            method: 'GET',
+            credentials: 'include',
+        };
+        try {
+            return await doFetch('/profile', fetchOptions);
+        } catch (e) {
+            throw new Error(e.message);
+        }
+    };
+
+    return { getUsers, getUserAvailable, register, getIsLoggedIn, postLogin, logout, getProfile };
 };
 
 export { useUsers };

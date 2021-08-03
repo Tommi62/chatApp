@@ -1,15 +1,30 @@
-import { useEffect, useState } from 'react';
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useContext, useEffect, useState } from 'react';
+import { MediaContext } from '../contexts/mediaContext';
 import { useUsers } from '../hooks/apiHooks';
 
-const Home = () => {
+interface propType {
+    history: {
+        push: Function,
+    }
+}
+
+const Home = ({ history }: propType) => {
+    const { user, setUser } = useContext(MediaContext);
     const [data, setData] = useState('');
-    const { getUsers } = useUsers();
+    const { getUsers, getIsLoggedIn } = useUsers();
 
     useEffect(() => {
         (async () => {
             try {
+                console.log('USER: ', user)
+                const isLoggedIn = await getIsLoggedIn();
+                if (!isLoggedIn.success) {
+                    history.push('/login');
+                }
+                setUser(isLoggedIn.id)
+                console.log('Logged user: ', user, isLoggedIn.id);
                 const result = await getUsers();
-                console.log('Result: ', result);
                 let nameList: string = ''
                 for (let i = 0; i < result.length; i++) {
                     nameList += result[i].username + '\n'
@@ -19,7 +34,7 @@ const Home = () => {
                 console.log(e.message);
             }
         })();
-    });
+    }, []);
 
     return (
         <div style={{ whiteSpace: 'pre-line' }}>

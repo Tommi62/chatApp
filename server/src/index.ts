@@ -2,7 +2,8 @@ const fastify = require('fastify')({ logger: true })
 const db = require('./queries')
 
 fastify.register(require('fastify-cors'), { 
-  origin: "*",
+  origin: "http://localhost:3000",
+  credentials: true,
 })
 
 fastify.register(require('./plugins/session'))
@@ -23,6 +24,7 @@ fastify.post('/user', {
     }
   }
 }, db.createUser)
+fastify.get('/isloggedin', db.isLoggedIn)
 fastify.post('/login', {
   schema: {
     body: {
@@ -33,6 +35,7 @@ fastify.post('/login', {
     },
   }
 }, db.login)
+fastify.delete('/logout', db.logout)
 fastify.get('/profile', db.getProfile)
 
 
