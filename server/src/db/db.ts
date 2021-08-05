@@ -1,4 +1,4 @@
-/*import { FastifyInstance, FastifyServerOptions } from 'fastify';
+import { FastifyInstance, FastifyServerOptions } from 'fastify';
 
 const fastifyPlugin = require('fastify-plugin') 
 const { Client } = require('pg') 
@@ -14,9 +14,13 @@ async function dbconnector(fastify: FastifyInstance, options: FastifyServerOptio
     try { 
         await client.connect() 
         console.log("db connected succesfully") 
-        fastify.decorate('db', {client}) 
+        fastify.decorateRequest('db', {client})
+        fastify.addHook('preHandler', (req, reply, done) => {
+            req.db = {client}
+            done()
+          })
     } catch(err) { 
         console.error(err) 
     } 
 } 
-module.exports= fastifyPlugin(dbconnector)*/
+module.exports= fastifyPlugin(dbconnector)

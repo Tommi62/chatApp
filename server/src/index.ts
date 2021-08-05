@@ -1,43 +1,22 @@
 const fastify = require('fastify')({ logger: true })
-const db = require('./queries')
+const path = require('path')
+const autoload = require('fastify-autoload')
 
 fastify.register(require('fastify-cors'), { 
   origin: "http://localhost:3000",
   credentials: true,
 })
 
-fastify.register(require('./plugins/session'))
+const dbconnector = require('./db/db')
+fastify.register(dbconnector)
 
+fastify.register(autoload,{
+  dir: path.join(__dirname, 'plugins')
+})
 
-//const dbconnector = require('./db/db')
-//fastify.register(dbconnector)
-
-fastify.get('/users', db.getUsers)
-fastify.get('/users/username/:username', db.getUserByUsername)
-fastify.post('/user', {
-  schema: {
-    body: {
-      type: 'object', required: ['username', 'password'], properties: {
-        username: { type: 'string' },
-        password: { type: 'string' },
-      }
-    }
-  }
-}, db.createUser)
-fastify.get('/isloggedin', db.isLoggedIn)
-fastify.post('/login', {
-  schema: {
-    body: {
-      type: 'object', required: ['username', 'password'], properties: {
-        username: { type: 'string' },
-        password: { type: 'string' },
-      }
-    },
-  }
-}, db.login)
-fastify.delete('/logout', db.logout)
-fastify.get('/profile', db.getProfile)
-
+fastify.register(autoload,{
+  dir: path.join(__dirname, 'routes')
+})
 
 // Run the server!
 const start = async () => {
