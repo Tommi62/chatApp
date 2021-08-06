@@ -1,9 +1,4 @@
-import { useState } from 'react';
 import config from '../config'
-
-interface Count {
-    value: number;
-}
 
 const doFetch = async (url: string, options = {}) => {
     const response = await fetch(config.backendUrl + url, options);
@@ -116,4 +111,26 @@ const useUsers = () => {
     return { getUsers, getUserAvailable, register, getIsLoggedIn, postLogin, logout, getProfile };
 };
 
-export { useUsers };
+const useChats = () => {
+
+    const getThreadIds = async (userId: number) => {
+        try {
+            return await doFetch('/threads/' + userId);
+        } catch (e) {
+            alert(e.message);
+        }
+    };
+
+    const getThreadName = async (threadId: number) => {
+        try {
+            const thread = await doFetch('/thread/' + threadId);
+            return thread.name;
+        } catch (e) {
+            alert(e.message);
+        }
+    };
+
+    return { getThreadIds, getThreadName }
+}
+
+export { useUsers, useChats };

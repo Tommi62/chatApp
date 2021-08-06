@@ -1,7 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import { Grid, List, Typography } from '@material-ui/core';
 import { useContext, useEffect, useState } from 'react';
+import Thread from '../components/thread';
+import ThreadButton from '../components/threadButton';
 import { MediaContext } from '../contexts/mediaContext';
-import { useUsers } from '../hooks/apiHooks';
+import { useUsers, useChats } from '../hooks/apiHooks';
 
 interface propType {
     history: {
@@ -9,10 +12,17 @@ interface propType {
     }
 }
 
+interface threadsArray {
+    thread_id: number
+}
+
 const Home = ({ history }: propType) => {
     const { user, setUser } = useContext(MediaContext);
-    const [data, setData] = useState('');
-    const { getUsers, getIsLoggedIn } = useUsers();
+    const { getIsLoggedIn } = useUsers();
+    const { getThreadIds } = useChats();
+    const [threads, setThreads] = useState<threadsArray[]>([]);
+    const [threadOpen, setThreadOpen] = useState(false)
+    const [threadId, setThreadId] = useState(0)
 
     useEffect(() => {
         (async () => {
@@ -24,22 +34,30 @@ const Home = ({ history }: propType) => {
                 }
                 setUser(isLoggedIn.id)
                 console.log('Logged user: ', user, isLoggedIn.id);
-                const result = await getUsers();
-                let nameList: string = ''
-                for (let i = 0; i < result.length; i++) {
-                    nameList += result[i].username + '\n'
-                }
-                setData(nameList);
+                const chatThreads = await getThreadIds(isLoggedIn.id)
+                setThreads(chatThreads)
+                console.log('THREADS: ', chatThreads[0].thread_id, threads)
             } catch (e) {
                 console.log(e.message);
             }
         })();
-    }, []);
+    }, [user]);
 
     return (
-        <div style={{ whiteSpace: 'pre-line' }}>
-            <h1>{!data ? "Loading..." : data}</h1>
-        </div>
+        <>
+            {threadOpen ? (
+                <Thread id={threadId} />
+            ) : (
+                <Grid container justify="center" direction="column">
+                    <Typography component="h1" variant="h2">Welcome</Typography>
+                    <List>
+                        {threads.map((item) => (
+                            <ThreadButton id={item.thread_id} setThreadOpen={setThreadOpen} setThreadId={setThreadId} />
+                        ))}{' '}
+                    </List>
+                </Grid>
+            )}
+        </>
     );
 
 }
