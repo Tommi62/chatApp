@@ -34,9 +34,11 @@ const Home = ({ history }: propType) => {
                 }
                 setUser(isLoggedIn.id)
                 console.log('Logged user: ', user, isLoggedIn.id);
-                const chatThreads = await getThreadIds(isLoggedIn.id)
-                setThreads(chatThreads)
-                console.log('THREADS: ', chatThreads[0].thread_id, threads)
+                if (user !== 0) {
+                    const chatThreads = await getThreadIds(isLoggedIn.id)
+                    setThreads(chatThreads)
+                    console.log('THREADS: ', chatThreads[0].thread_id, threads)
+                }
             } catch (e) {
                 console.log(e.message);
             }
