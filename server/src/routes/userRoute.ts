@@ -9,21 +9,22 @@ const userRoute = async (fastify: FastifyInstance, options: FastifyServerOptions
     fastify.post('/user', {
         schema: {
             body: {
-            type: 'object', required: ['username', 'password'], properties: {
-                username: { type: 'string' },
-                password: { type: 'string' },
-            }
+                type: 'object', required: ['username', 'password'], properties: {
+                    username: { type: 'string' },
+                    password: { type: 'string' },
+                }
             }
         }
     }, db.createUser)
+    fastify.get('/user/:id', db.getUsernameById)
     fastify.get('/isloggedin', db.isLoggedIn)
     fastify.post('/login', {
         schema: {
             body: {
-            type: 'object', required: ['username', 'password'], properties: {
-                username: { type: 'string' },
-                password: { type: 'string' },
-            }
+                type: 'object', required: ['username', 'password'], properties: {
+                    username: { type: 'string' },
+                    password: { type: 'string' },
+                }
             },
         }
     }, db.login)

@@ -37,6 +37,14 @@ const useUsers = () => {
         }
     };
 
+    const getUsernameById = async (id: number) => {
+        try {
+            return await doFetch('/user/' + id);
+        } catch (e) {
+            alert(e.message);
+        }
+    };
+
     const register = async (inputs: Object) => {
         const fetchOptions = {
             method: 'POST',
@@ -108,7 +116,7 @@ const useUsers = () => {
         }
     };
 
-    return { getUsers, getUserAvailable, register, getIsLoggedIn, postLogin, logout, getProfile };
+    return { getUsers, getUserAvailable, getUsernameById, register, getIsLoggedIn, postLogin, logout, getProfile };
 };
 
 const useChats = () => {
@@ -130,7 +138,32 @@ const useChats = () => {
         }
     };
 
-    return { getThreadIds, getThreadName }
+    const postMessage = async (messageObject: Object) => {
+        const fetchOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: messageObject,
+            credentials: 'include',
+        };
+        try {
+            const result = await doFetch('/message', fetchOptions);
+            return result.success
+        } catch (e) {
+            alert(e.message);
+        }
+    };
+
+    const getMessages = async (threadId: number) => {
+        try {
+            return await doFetch('/messages/' + threadId);
+        } catch (e) {
+            alert(e.message);
+        }
+    };
+
+    return { getThreadIds, getThreadName, postMessage, getMessages }
 }
 
 export { useUsers, useChats };

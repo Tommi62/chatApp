@@ -20,7 +20,7 @@ const App = () => {
           }}
         >
           <Nav />
-          <main style={{ marginTop: 64, textAlign: 'center' }}>
+          <main style={{ marginTop: 64, textAlign: 'center', width: '100vw' }}>
             <Switch>
               <Route path="/" exact component={Home} />
               <Route path="/login" component={Login} />
