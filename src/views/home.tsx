@@ -4,6 +4,7 @@ import { useContext, useEffect, useState } from 'react';
 import Thread from '../components/thread';
 import ThreadButton from '../components/threadButton';
 import { MediaContext } from '../contexts/mediaContext';
+import { WebsocketContext } from '../contexts/websocketContext';
 import { useUsers, useChats } from '../hooks/apiHooks';
 
 interface propType {
@@ -16,13 +17,24 @@ interface threadsArray {
     thread_id: number
 }
 
+interface messagesArray {
+    id: number,
+    user_id: number,
+    contents: string,
+    timestamp: Date,
+}
+
 const Home = ({ history }: propType) => {
     const { user, setUser } = useContext(MediaContext);
+    const { websocket, setWebsocket } = useContext(WebsocketContext);
     const { getIsLoggedIn } = useUsers();
-    const { getThreadIds } = useChats();
+    const { getThreadIds, getMessages } = useChats();
     const [threads, setThreads] = useState<threadsArray[]>([]);
     const [threadOpen, setThreadOpen] = useState(false)
     const [threadId, setThreadId] = useState(0)
+    const [messages, setMessages] = useState<messagesArray[]>([]);
+    const [webSocketUpdate, setWebSocketUpdate] = useState('');
+    const [socketThreadId, setSocketThreadId] = useState(0);
 
     useEffect(() => {
         (async () => {
@@ -37,7 +49,6 @@ const Home = ({ history }: propType) => {
                 if (user !== 0) {
                     const chatThreads = await getThreadIds(isLoggedIn.id)
                     setThreads(chatThreads)
-                    console.log('THREADS: ', chatThreads[0].thread_id, threads)
                 }
             } catch (e) {
                 console.log(e.message);
@@ -45,16 +56,86 @@ const Home = ({ history }: propType) => {
         })();
     }, [user]);
 
+    useEffect(() => {
+        (async () => {
+            try {
+                if (threadId !== 0) {
+                    const threadMessages = await getMessages(threadId);
+                    setMessages(threadMessages);
+                    console.log('USEEFFECT');
+                }
+            } catch (e) {
+                console.log(e.message);
+            }
+        })();
+    }, [threadId, webSocketUpdate]);
+
+    useEffect(() => {
+        try {
+            if (threadOpen) {
+                if (websocket === undefined || websocket.readyState === 2 || websocket.readyState === 3 || threadId !== socketThreadId) {
+                    console.log('READYSTATE ', websocket?.readyState)
+                    const socket = new WebSocket('ws://localhost:3001');
+
+                    socket.addEventListener('open', function (event) {
+                        console.log('Server is opened.');
+                        const client = {
+                            type: 'client',
+                            thread_id: threadId,
+                            user_id: user,
+                        }
+                        socket.send(JSON.stringify(client));
+                    });
+
+                    socket.addEventListener('message', function (event) {
+                        console.log('Message from server ', JSON.parse(event.data).thread_id);
+                        const message = JSON.parse(event.data);
+                        if (message.thread_id === threadId) {
+                            setWebSocketUpdate(message.timestamp);
+                        }
+                    });
+
+                    socket.addEventListener('close', function (event) {
+                        console.log('Websocket connection closed.');
+                    });
+
+                    setWebsocket(socket);
+                    setSocketThreadId(threadId);
+                    console.log('NEW SOCKET');
+                }
+            } else {
+                if (websocket !== undefined) {
+                    console.log('CLOSE');
+                    websocket.close();
+                }
+            }
+        } catch (e) {
+            console.log(e.message);
+        };
+    }, [threadOpen, threadId]);
+
+
     return (
         <>
             {threadOpen ? (
-                <Thread id={threadId} />
+                <Grid container direction="row">
+                    <Grid item style={{ width: '30%' }}>
+                        <List>
+                            {threads.map((item) => (
+                                <ThreadButton id={item.thread_id} setThreadOpen={setThreadOpen} setThreadId={setThreadId} threadOpen={threadOpen} />
+                            ))}{' '}
+                        </List>
+                    </Grid>
+                    <Grid item style={{ width: '70%' }}>
+                        <Thread messages={messages} id={threadId} setWebSocketUpdate={setWebSocketUpdate} websocket={websocket} />
+                    </Grid>
+                </Grid>
             ) : (
                 <Grid container justify="center" direction="column">
                     <Typography component="h1" variant="h2">Welcome</Typography>
                     <List>
                         {threads.map((item) => (
-                            <ThreadButton id={item.thread_id} setThreadOpen={setThreadOpen} setThreadId={setThreadId} />
+                            <ThreadButton id={item.thread_id} setThreadOpen={setThreadOpen} setThreadId={setThreadId} threadOpen={threadOpen} />
                         ))}{' '}
                     </List>
                 </Grid>

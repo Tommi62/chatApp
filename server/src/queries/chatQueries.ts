@@ -1,5 +1,4 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import formatISO from 'date-fns/formatISO'
 
 type ChatRequest = FastifyRequest<{
   Params: {
@@ -39,11 +38,9 @@ const getThreadNameByThreadId = async (request: ChatRequest, reply: FastifyReply
 const postMessage = async (request: ChatRequest, reply: FastifyReply) => {
   const { contents, timestamp, user_id, thread_id } = request.body
   console.log('MESSAGE: ', contents)
-  const time = formatISO(new Date())
-  console.log('TIME: ', time)
   const status = 'unread'
   try {
-    await request.db.client.query('INSERT INTO message(contents, timestamp, status, user_id, thread_id) VALUES($1, $2, $3, $4, $5)', [contents, time, status, user_id, thread_id])
+    await request.db.client.query('INSERT INTO message(contents, timestamp, status, user_id, thread_id) VALUES($1, $2, $3, $4, $5)', [contents, timestamp, status, user_id, thread_id])
 
     return { success: true }
   } catch (err) {
@@ -54,7 +51,7 @@ const postMessage = async (request: ChatRequest, reply: FastifyReply) => {
 const getMessagesByThreadId = async (request: ChatRequest, reply: FastifyReply) => {
   const threadId = request.params.id
   try {
-    const { rows } = await request.db.client.query('SELECT contents, timestamp, user_id FROM message WHERE thread_id = $1', [threadId])
+    const { rows } = await request.db.client.query('SELECT id, contents, timestamp, user_id FROM message WHERE thread_id = $1', [threadId])
     return rows
   } catch (err) {
     throw new Error(err)

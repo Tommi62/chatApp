@@ -8,9 +8,10 @@ interface propType {
     id: number,
     setThreadOpen: Function,
     setThreadId: Function,
+    threadOpen: Boolean,
 }
 
-const ThreadButton = ({ id, setThreadOpen, setThreadId }: propType) => {
+const ThreadButton = ({ id, setThreadOpen, setThreadId, threadOpen }: propType) => {
     const { getThreadName } = useChats();
     const [name, setName] = useState('');
 
@@ -28,7 +29,11 @@ const ThreadButton = ({ id, setThreadOpen, setThreadId }: propType) => {
     }, []);
 
     const openThread = () => {
-        setThreadOpen(true)
+        if (!threadOpen) {
+            setThreadOpen(true)
+        } else {
+            setThreadOpen(false)
+        }
         setThreadId(id)
     }
 

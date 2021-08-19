@@ -4,29 +4,27 @@ import { useContext } from 'react';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { MediaContext } from '../contexts/mediaContext';
-import { useChats, useUsers } from '../hooks/apiHooks';
+import { useUsers } from '../hooks/apiHooks';
 
 interface propType {
+    message_id: number,
     user_id: number,
     contents: string,
     timestamp: Date,
+    setMessageId: Function,
 }
 
 const useStyles = makeStyles(() => ({
     message: {
-        width: '100%',
-        maxWidth: '36ch',
         backgroundColor: 'lightGrey',
-        marginBottom: '1rem',
+        marginBottom: '0.5rem',
         borderRadius: '1rem',
         padding: '0.5rem',
     },
     ownMessage: {
-        width: '100%',
-        maxWidth: '36ch',
-        backgroundColor: '#a252f7',
+        backgroundColor: '#5F4B8BFF',
         color: 'white',
-        marginBottom: '1rem',
+        marginBottom: '0.5rem',
         borderRadius: '1rem',
         padding: '0.5rem',
     },
@@ -38,11 +36,12 @@ const useStyles = makeStyles(() => ({
         color: 'white',
     },
     timestamp: {
-        fontSize: '0.7rem'
+        fontSize: '0.7rem',
+        marginLeft: '2rem'
     }
 }));
 
-const Message = ({ user_id, contents, timestamp }: propType) => {
+const Message = ({ message_id, user_id, contents, timestamp, setMessageId }: propType) => {
     const classes = useStyles();
     const [username, setUsername] = useState('');
     const [time, setTime] = useState('');
@@ -55,12 +54,23 @@ const Message = ({ user_id, contents, timestamp }: propType) => {
             try {
                 const messageOwner = await getUsernameById(user_id);
                 setUsername(messageOwner.username);
+
                 const d = new Date(timestamp);
-                const formatedTime = d.getHours() + '.' + d.getMinutes();
+                let hours = d.getHours().toString();
+                let minutes = d.getMinutes().toString();
+                if (d.getHours() < 10) {
+                    hours = '0' + hours;
+                }
+                if (d.getMinutes() < 10) {
+                    minutes = '0' + minutes;
+                }
+                const formatedTime = hours + '.' + minutes;
                 setTime(formatedTime);
+
                 if (user_id === user) {
                     setOwnMessage(true)
                 }
+                setMessageId(message_id);
             } catch (e) {
                 console.log(e.message);
             }

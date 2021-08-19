@@ -12,6 +12,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/pg": "^8.6.1",
+    "@types/ws": "^7.4.7",
     "nodemon": "^2.0.12",
     "ts-node": "^10.1.0",
     "typescript": "^4.3.5"
@@ -27,6 +28,7 @@
     "fastify-plugin": "^3.0.0",
     "fastify-postgres": "^3.5.0",
     "fastify-session": "^5.2.1",
+    "fastify-websocket": "^3.2.1",
     "pg": "^8.6.0"
   }
 }
