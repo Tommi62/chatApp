@@ -6,12 +6,18 @@ import { useEffect } from 'react';
 import { MediaContext } from '../contexts/mediaContext';
 import { useUsers } from '../hooks/apiHooks';
 
+interface usernamesArray {
+    user_id: number,
+    username: string,
+}
+
 interface propType {
     message_id: number,
     user_id: number,
     contents: string,
     timestamp: Date,
     setMessageId: Function,
+    usernames: usernamesArray[],
 }
 
 const useStyles = makeStyles(() => ({
@@ -41,7 +47,7 @@ const useStyles = makeStyles(() => ({
     }
 }));
 
-const Message = ({ message_id, user_id, contents, timestamp, setMessageId }: propType) => {
+const Message = ({ message_id, user_id, contents, timestamp, setMessageId, usernames }: propType) => {
     const classes = useStyles();
     const [username, setUsername] = useState('');
     const [time, setTime] = useState('');
@@ -50,31 +56,32 @@ const Message = ({ message_id, user_id, contents, timestamp, setMessageId }: pro
     const { getUsernameById } = useUsers();
 
     useEffect(() => {
-        (async () => {
-            try {
-                const messageOwner = await getUsernameById(user_id);
-                setUsername(messageOwner.username);
-
-                const d = new Date(timestamp);
-                let hours = d.getHours().toString();
-                let minutes = d.getMinutes().toString();
-                if (d.getHours() < 10) {
-                    hours = '0' + hours;
+        try {
+            for (let i = 0; i < usernames.length; i++) {
+                if (usernames[i].user_id === user_id) {
+                    setUsername(usernames[i].username);
                 }
-                if (d.getMinutes() < 10) {
-                    minutes = '0' + minutes;
-                }
-                const formatedTime = hours + '.' + minutes;
-                setTime(formatedTime);
-
-                if (user_id === user) {
-                    setOwnMessage(true)
-                }
-                setMessageId(message_id);
-            } catch (e) {
-                console.log(e.message);
             }
-        })();
+
+            const d = new Date(timestamp);
+            let hours = d.getHours().toString();
+            let minutes = d.getMinutes().toString();
+            if (d.getHours() < 10) {
+                hours = '0' + hours;
+            }
+            if (d.getMinutes() < 10) {
+                minutes = '0' + minutes;
+            }
+            const formatedTime = hours + '.' + minutes;
+            setTime(formatedTime);
+
+            if (user_id === user) {
+                setOwnMessage(true)
+            }
+            setMessageId(message_id);
+        } catch (e) {
+            console.log(e.message);
+        }
     }, []);
 
 

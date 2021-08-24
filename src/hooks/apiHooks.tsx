@@ -129,6 +129,14 @@ const useChats = () => {
         }
     };
 
+    const getUserIds = async (userId: number) => {
+        try {
+            return await doFetch('/threadusers/' + userId);
+        } catch (e) {
+            alert(e.message);
+        }
+    };
+
     const getThreadName = async (threadId: number) => {
         try {
             const thread = await doFetch('/thread/' + threadId);
@@ -163,7 +171,7 @@ const useChats = () => {
         }
     };
 
-    return { getThreadIds, getThreadName, postMessage, getMessages }
+    return { getThreadIds, getUserIds, getThreadName, postMessage, getMessages }
 }
 
 export { useUsers, useChats };

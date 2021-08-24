@@ -127,7 +127,7 @@ const Home = ({ history }: propType) => {
                         </List>
                     </Grid>
                     <Grid item style={{ width: '70%' }}>
-                        <Thread messages={messages} id={threadId} setWebSocketUpdate={setWebSocketUpdate} websocket={websocket} />
+                        <Thread messages={messages} id={threadId} websocket={websocket} />
                     </Grid>
                 </Grid>
             ) : (

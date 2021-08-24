@@ -3,7 +3,7 @@ import SendIcon from '@material-ui/icons/Send';
 import { IconButton } from '@material-ui/core';
 import { FormEvent, useContext, useEffect, useState } from 'react';
 import { MediaContext } from '../contexts/mediaContext';
-import { useChats } from '../hooks/apiHooks';
+import { useChats, useUsers } from '../hooks/apiHooks';
 import Message from '../components/message';
 import useWindowDimensions from '../hooks/windowDimensionsHook';
 import { useRef } from 'react';
@@ -18,16 +18,22 @@ interface messagesArray {
 interface propType {
     messages: messagesArray[],
     id: number,
-    setWebSocketUpdate: Function,
     websocket: WebSocket | undefined,
 }
 
+interface usernamesArray {
+    user_id: number,
+    username: string,
+}
 
-const Thread = ({ messages, id, setWebSocketUpdate, websocket }: propType) => {
+
+const Thread = ({ messages, id, websocket }: propType) => {
     const [message, setMessage] = useState('');
     const [messageId, setMessageId] = useState(0);
+    const [usernames, setUsernames] = useState<usernamesArray[]>([])
     const { user } = useContext(MediaContext);
-    const { postMessage } = useChats();
+    const { postMessage, getUserIds } = useChats();
+    const { getUsernameById } = useUsers();
     const { height } = useWindowDimensions();
     const heightCorrected = height - 64;
     const messagesEndRef = useRef<null | HTMLDivElement>(null)
@@ -45,6 +51,27 @@ const Thread = ({ messages, id, setWebSocketUpdate, websocket }: propType) => {
             }
         })();
     }, [messageId]);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const userIds = await getUserIds(id);
+                let usernameArray: Array<usernamesArray> = [];
+                for (let i = 0; i < userIds.length; i++) {
+                    const user = await getUsernameById(userIds[i].user_id);
+                    const userObject = {
+                        user_id: userIds[i].user_id,
+                        username: user.username
+                    }
+                    usernameArray.push(userObject);
+                }
+                setUsernames(usernameArray)
+
+            } catch (e) {
+                console.log(e.message);
+            }
+        })();
+    }, []);
 
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault();
@@ -82,12 +109,14 @@ const Thread = ({ messages, id, setWebSocketUpdate, websocket }: propType) => {
                         overflowX: 'hidden',
                         overflowY: 'auto'
                     }}>
-                    <List>
-                        {messages.map((item) => (
-                            <Message message_id={item.id} user_id={item.user_id} contents={item.contents} timestamp={item.timestamp} setMessageId={setMessageId} />
-                        ))}{' '}
-                        <div ref={messagesEndRef} />
-                    </List>
+                    {usernames.length > 0 &&
+                        <List>
+                            {messages.map((item) => (
+                                <Message message_id={item.id} user_id={item.user_id} contents={item.contents} timestamp={item.timestamp} setMessageId={setMessageId} usernames={usernames} />
+                            ))}{' '}
+                            <div ref={messagesEndRef} />
+                        </List>
+                    }
                 </Grid>
                 <Grid item container justify="center" direction="column" style={{ height: '10%', backgroundColor: 'lightgray' }}>
                     <Grid item>
