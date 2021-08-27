@@ -38,28 +38,33 @@ let clients: Array<clientArray> = [];
 
 fastify.get('/', { websocket: true }, (connection: SocketStream /* SocketStream */, req: FastifyRequest /* FastifyRequest */) => {
   connection.socket.on('message', message => {
-    const clientMessage = JSON.parse(message.toString())
+    if (message.toString() !== 'pong') {
+      const clientMessage = JSON.parse(message.toString())
 
-    if (clientMessage.type === 'client') {
-      console.log('ID: ', clientMessage.thread_id)
-      const clientObject = {
-        thread_id: clientMessage.thread_id,
-        user_id: clientMessage.user_id,
-        client: connection,
-      }
-      clients.push(clientObject)
-    } else {
-      for (let i = clients.length - 1; i > -1; i--) {
-        if (clients[i].client.socket._readyState === 3) {
-          clients.splice(i, 1);
-        } else if (clients[i].thread_id === clientMessage.thread_id) {
-          console.log('USERIDCLIENT: ', clients[i].user_id)
-          console.log('CONNECTION:', clients[i].client.socket._readyState)
-          clients[i].client.socket.send(message.toString())
+      if (clientMessage.type === 'client') {
+        console.log('ID: ', clientMessage.thread_id)
+        const clientObject = {
+          thread_id: clientMessage.thread_id,
+          user_id: clientMessage.user_id,
+          client: connection,
+        }
+        clients.push(clientObject)
+      } else {
+        for (let i = clients.length - 1; i > -1; i--) {
+          if (clients[i].client.socket._readyState === 3) {
+            clients.splice(i, 1);
+          } else if (clients[i].thread_id === clientMessage.thread_id) {
+            console.log('USERIDCLIENT: ', clients[i].user_id)
+            console.log('CONNECTION:', clients[i].client.socket._readyState)
+            clients[i].client.socket.send(message.toString())
+          }
         }
       }
+    } else {
+      setTimeout(() => connection.socket.send('ping'), 1000)
     }
   })
+  connection.socket.send('ping') //loop start
 })
 
 // Run the server!

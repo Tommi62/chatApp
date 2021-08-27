@@ -1,7 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Button } from "@material-ui/core";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useEffect } from "react";
+import { WebsocketContext } from "../contexts/websocketContext";
 import { useChats } from '../hooks/apiHooks';
 
 interface propType {
@@ -14,6 +15,7 @@ interface propType {
 const ThreadButton = ({ id, setThreadOpen, setThreadId, threadOpen }: propType) => {
     const { getThreadName } = useChats();
     const [name, setName] = useState('');
+    const { websocket } = useContext(WebsocketContext);
 
     useEffect(() => {
         (async () => {
@@ -33,6 +35,9 @@ const ThreadButton = ({ id, setThreadOpen, setThreadId, threadOpen }: propType) 
             setThreadOpen(true)
         } else {
             setThreadOpen(false)
+            if (websocket !== undefined) {
+                websocket.close();
+            }
         }
         setThreadId(id)
     }

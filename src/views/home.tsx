@@ -35,6 +35,7 @@ const Home = ({ history }: propType) => {
     const [messages, setMessages] = useState<messagesArray[]>([]);
     const [webSocketUpdate, setWebSocketUpdate] = useState('');
     const [socketThreadId, setSocketThreadId] = useState(0);
+    const [updateState, setUpdateState] = useState(Date.now());
 
     useEffect(() => {
         (async () => {
@@ -88,31 +89,31 @@ const Home = ({ history }: propType) => {
                     });
 
                     socket.addEventListener('message', function (event) {
-                        console.log('Message from server ', JSON.parse(event.data).thread_id);
-                        const message = JSON.parse(event.data);
-                        if (message.thread_id === threadId) {
-                            setWebSocketUpdate(message.timestamp);
+                        if (event.data !== 'ping') {
+                            console.log('Message from server ', JSON.parse(event.data).thread_id);
+                            const message = JSON.parse(event.data);
+                            if (message.thread_id === threadId) {
+                                setWebSocketUpdate(message.timestamp);
+                            }
+                        } else {
+                            setTimeout(() => socket.send('pong'), 1000);
                         }
                     });
 
                     socket.addEventListener('close', function (event) {
                         console.log('Websocket connection closed.');
+                        setUpdateState(Date.now());
                     });
 
                     setWebsocket(socket);
                     setSocketThreadId(threadId);
                     console.log('NEW SOCKET');
                 }
-            } else {
-                if (websocket !== undefined) {
-                    console.log('CLOSE');
-                    websocket.close();
-                }
             }
         } catch (e) {
             console.log(e.message);
         };
-    }, [threadOpen, threadId]);
+    }, [threadOpen, threadId, updateState]);
 
 
     return (
