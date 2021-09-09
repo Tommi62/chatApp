@@ -28,7 +28,6 @@ const getUsersByThreadId = async (request: ChatRequest, reply: FastifyReply) => 
   const threadId = request.params.id
   try {
     const { rows } = await request.db.client.query('SELECT user_id FROM chatting WHERE thread_id = $1', [threadId])
-    console.log('THREADS: ', rows)
     return rows
   } catch (err) {
     throw new Error(err)
@@ -62,6 +61,16 @@ const postMessage = async (request: ChatRequest, reply: FastifyReply) => {
 const getMessagesByThreadId = async (request: ChatRequest, reply: FastifyReply) => {
   const threadId = request.params.id
   try {
+    const { rows } = await request.db.client.query('SELECT id, contents, timestamp, user_id FROM message WHERE thread_id = $1 ORDER BY id DESC LIMIT 50', [threadId])
+    return rows
+  } catch (err) {
+    throw new Error(err)
+  }
+}
+
+const getAllMessagesByThreadId = async (request: ChatRequest, reply: FastifyReply) => {
+  const threadId = request.params.id
+  try {
     const { rows } = await request.db.client.query('SELECT id, contents, timestamp, user_id FROM message WHERE thread_id = $1', [threadId])
     return rows
   } catch (err) {
@@ -69,4 +78,4 @@ const getMessagesByThreadId = async (request: ChatRequest, reply: FastifyReply) 
   }
 }
 
-module.exports = { getThreadsByUserId, getUsersByThreadId, getThreadNameByThreadId, postMessage, getMessagesByThreadId }
+module.exports = { getThreadsByUserId, getUsersByThreadId, getThreadNameByThreadId, postMessage, getMessagesByThreadId, getAllMessagesByThreadId }

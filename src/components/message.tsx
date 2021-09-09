@@ -4,7 +4,6 @@ import { useContext } from 'react';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { MediaContext } from '../contexts/mediaContext';
-import { useUsers } from '../hooks/apiHooks';
 
 interface usernamesArray {
     user_id: number,
@@ -53,7 +52,6 @@ const Message = ({ message_id, user_id, contents, timestamp, setMessageId, usern
     const [time, setTime] = useState('');
     const [ownMessage, setOwnMessage] = useState(false);
     const { user } = useContext(MediaContext);
-    const { getUsernameById } = useUsers();
 
     useEffect(() => {
         try {
@@ -77,12 +75,14 @@ const Message = ({ message_id, user_id, contents, timestamp, setMessageId, usern
 
             if (user_id === user) {
                 setOwnMessage(true)
+            } else {
+                setOwnMessage(false);
             }
             setMessageId(message_id);
         } catch (e) {
             console.log(e.message);
         }
-    }, []);
+    }, [message_id]);
 
 
     return (

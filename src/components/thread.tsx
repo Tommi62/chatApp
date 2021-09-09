@@ -1,4 +1,4 @@
-import { Grid, List, TextField } from '@material-ui/core';
+import { Button, Grid, List, TextField } from '@material-ui/core';
 import SendIcon from '@material-ui/icons/Send';
 import { IconButton } from '@material-ui/core';
 import { FormEvent, useContext, useEffect, useState } from 'react';
@@ -30,27 +30,55 @@ interface usernamesArray {
 const Thread = ({ messages, id, websocket }: propType) => {
     const [message, setMessage] = useState('');
     const [messageId, setMessageId] = useState(0);
+    const [showButton, setShowButton] = useState(false);
     const [usernames, setUsernames] = useState<usernamesArray[]>([])
+    const [moreMessages, setMoreMessages] = useState<messagesArray[]>([])
+    const [loadMore, setLoadMore] = useState(false);
+    const [messageScroll, setMessageScroll] = useState(false);
     const { user } = useContext(MediaContext);
-    const { postMessage, getUserIds } = useChats();
+    const { postMessage, getUserIds, getAllMessages } = useChats();
     const { getUsernameById } = useUsers();
     const { height } = useWindowDimensions();
     const heightCorrected = height - 64;
     const messagesEndRef = useRef<null | HTMLDivElement>(null)
+    const messagesEndRef2 = useRef<null | HTMLDivElement>(null)
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    const scrollToBottom = (number: number) => {
+        if (number === 1) {
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+        } else {
+            messagesEndRef2.current?.scrollIntoView({ behavior: "smooth" })
+            setMessageScroll(true);
+        }
     }
 
     useEffect(() => {
         (async () => {
             try {
-                scrollToBottom();
+                if (loadMore && !messageScroll) {
+                    scrollToBottom(2);
+                } else {
+                    scrollToBottom(1);
+                }
             } catch (e) {
                 console.log(e.message);
             }
         })();
     }, [messageId]);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                if (messages.length === 50 && !loadMore) {
+                    setShowButton(true);
+                } else {
+                    setShowButton(false);
+                }
+            } catch (e) {
+                console.log(e.message);
+            }
+        })();
+    }, [messages]);
 
     useEffect(() => {
         (async () => {
@@ -98,6 +126,14 @@ const Thread = ({ messages, id, websocket }: propType) => {
         setMessage('');
     };
 
+    const loadAllMessages = async () => {
+        const allMessages = await getAllMessages(id);
+        allMessages.splice(allMessages.length - 50, 50);
+        setMoreMessages(allMessages);
+        setLoadMore(true);
+        setShowButton(false);
+    }
+
     return (
         <>
             <Grid container justify="center" direction="column" style={{ height: heightCorrected }}>
@@ -109,6 +145,17 @@ const Thread = ({ messages, id, websocket }: propType) => {
                         overflowX: 'hidden',
                         overflowY: 'auto'
                     }}>
+                    {loadMore &&
+                        <List>
+                            {moreMessages.map((item) => (
+                                <Message message_id={item.id} user_id={item.user_id} contents={item.contents} timestamp={item.timestamp} setMessageId={setMessageId} usernames={usernames} />
+                            ))}{' '}
+                            <div ref={messagesEndRef2} />
+                        </List>
+                    }
+                    {showButton &&
+                        <Button onClick={loadAllMessages}>Load all messages</Button>
+                    }
                     {usernames.length > 0 &&
                         <List>
                             {messages.map((item) => (

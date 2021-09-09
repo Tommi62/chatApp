@@ -8,6 +8,7 @@ const chatRoute = async (fastify: FastifyInstance, options: FastifyServerOptions
     fastify.get('/thread/:id', db.getThreadNameByThreadId)
     fastify.post('/message', db.postMessage)
     fastify.get('/messages/:id', db.getMessagesByThreadId)
+    fastify.get('/all_messages/:id', db.getAllMessagesByThreadId)
 }
 
 module.exports = chatRoute

@@ -62,8 +62,8 @@ const Home = ({ history }: propType) => {
             try {
                 if (threadId !== 0) {
                     const threadMessages = await getMessages(threadId);
-                    setMessages(threadMessages);
-                    console.log('USEEFFECT');
+                    const reversedArray = threadMessages.reverse();
+                    setMessages(reversedArray);
                 }
             } catch (e) {
                 console.log(e.message);
