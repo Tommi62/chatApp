@@ -69,7 +69,8 @@ const Thread = ({ messages, id, websocket }: propType) => {
     useEffect(() => {
         (async () => {
             try {
-                if (messages.length === 50 && !loadMore) {
+                console.log('messageUpdate')
+                if (messages.length >= 50 && !loadMore) {
                     setShowButton(true);
                 } else {
                     setShowButton(false);
@@ -117,8 +118,10 @@ const Thread = ({ messages, id, websocket }: propType) => {
         console.log('SUCCESS: ', success)
         const webSocketUpdate = {
             type: 'message',
-            thread_id: id,
-            timestamp: Date.now(),
+            contents: message,
+            timestamp: localISOTime,
+            user_id: user,
+            thread_id: id
         }
         if (websocket !== undefined) {
             websocket.send(JSON.stringify(webSocketUpdate));

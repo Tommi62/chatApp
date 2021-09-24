@@ -33,9 +33,9 @@ const Home = ({ history }: propType) => {
     const [threadOpen, setThreadOpen] = useState(false)
     const [threadId, setThreadId] = useState(0)
     const [messages, setMessages] = useState<messagesArray[]>([]);
-    const [webSocketUpdate, setWebSocketUpdate] = useState('');
     const [socketThreadId, setSocketThreadId] = useState(0);
     const [updateState, setUpdateState] = useState(Date.now());
+    let newMessagesArray: messagesArray[] = [];
 
     useEffect(() => {
         (async () => {
@@ -63,13 +63,14 @@ const Home = ({ history }: propType) => {
                 if (threadId !== 0) {
                     const threadMessages = await getMessages(threadId);
                     const reversedArray = threadMessages.reverse();
-                    setMessages(reversedArray);
+                    newMessagesArray = reversedArray;
+                    setMessages(newMessagesArray);
                 }
             } catch (e) {
                 console.log(e.message);
             }
         })();
-    }, [threadId, webSocketUpdate]);
+    }, [threadId, updateState]);
 
     useEffect(() => {
         try {
@@ -93,7 +94,15 @@ const Home = ({ history }: propType) => {
                             console.log('Message from server ', JSON.parse(event.data).thread_id);
                             const message = JSON.parse(event.data);
                             if (message.thread_id === threadId) {
-                                setWebSocketUpdate(message.timestamp);
+                                const newMessageObject = {
+                                    id: Date.now(),
+                                    user_id: message.user_id,
+                                    contents: message.contents,
+                                    timestamp: message.timestamp,
+                                }
+                                newMessagesArray.push(newMessageObject);
+                                const arrayCopy = [...newMessagesArray];
+                                setMessages(arrayCopy);
                             }
                         } else {
                             setTimeout(() => socket.send('pong'), 1000);
@@ -121,11 +130,13 @@ const Home = ({ history }: propType) => {
             {threadOpen ? (
                 <Grid container direction="row">
                     <Grid item style={{ width: '30%' }}>
-                        <List>
-                            {threads.map((item) => (
-                                <ThreadButton id={item.thread_id} setThreadOpen={setThreadOpen} setThreadId={setThreadId} threadOpen={threadOpen} />
-                            ))}{' '}
-                        </List>
+                        <Grid container style={{ borderTop: '1px solid #5F4B8BFF', marginTop: '1rem' }} >
+                            <List style={{ padding: 0, width: '100%' }}>
+                                {threads.map((item) => (
+                                    <ThreadButton id={item.thread_id} setThreadOpen={setThreadOpen} setThreadId={setThreadId} threadOpen={threadOpen} />
+                                ))}{' '}
+                            </List>
+                        </Grid>
                     </Grid>
                     <Grid item style={{ width: '70%' }}>
                         <Thread messages={messages} id={threadId} websocket={websocket} />
@@ -134,7 +145,14 @@ const Home = ({ history }: propType) => {
             ) : (
                 <Grid container justify="center" direction="column">
                     <Typography component="h1" variant="h2">Welcome</Typography>
-                    <List>
+                    <List style={{
+                        width: '30vw',
+                        padding: 0,
+                        margin: 'auto',
+                        borderStyle: 'solid',
+                        borderWidth: '1px 1px 0 1px',
+                        borderColor: '#5F4B8BFF'
+                    }}>
                         {threads.map((item) => (
                             <ThreadButton id={item.thread_id} setThreadOpen={setThreadOpen} setThreadId={setThreadId} threadOpen={threadOpen} />
                         ))}{' '}
