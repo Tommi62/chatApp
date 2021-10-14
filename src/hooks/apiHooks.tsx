@@ -179,7 +179,15 @@ const useChats = () => {
         }
     };
 
-    return { getThreadIds, getUserIds, getThreadName, postMessage, getMessages, getAllMessages }
+    const getLastMessage = async (threadId: number) => {
+        try {
+            return await doFetch('/last_message/' + threadId);
+        } catch (e) {
+            alert(e.message);
+        }
+    };
+
+    return { getThreadIds, getUserIds, getThreadName, postMessage, getMessages, getAllMessages, getLastMessage }
 }
 
 export { useUsers, useChats };

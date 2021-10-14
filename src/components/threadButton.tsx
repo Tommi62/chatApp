@@ -1,15 +1,21 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Button, Grid, ListItemText, makeStyles, Typography } from "@material-ui/core";
+import { Button, Grid, ListItem, ListItemText, makeStyles, Typography } from "@material-ui/core";
 import { useContext, useState } from "react";
 import { useEffect } from "react";
 import { WebsocketContext } from "../contexts/websocketContext";
-import { useChats } from '../hooks/apiHooks';
+import { useChats, useUsers } from '../hooks/apiHooks';
 
 interface propType {
     id: number,
     setThreadOpen: Function,
     setThreadId: Function,
     threadOpen: Boolean,
+}
+
+interface lastMessageObject {
+    username: string,
+    contents: string,
+    timestamp: any,
 }
 
 const useStyles = makeStyles(() => ({
@@ -23,38 +29,61 @@ const useStyles = makeStyles(() => ({
     },
     lastMessage: {
         display: 'inline',
-        fontSize: '0.6rem'
+        fontSize: '0.7rem'
     },
     timestamp: {
         fontSize: '0.5rem',
         marginLeft: '2rem'
     },
     button: {
-        background: 'fff',
         width: '100%',
         maxWidth: '30vw',
-        display: 'inline-block',
-        padding: '0 1rem',
-        minHeight: 0,
-        minWidth: 0,
+        padding: '0 0.7rem',
         borderBottom: '1px solid #5F4B8BFF',
-        borderRadius: 0,
+        cursor: 'pointer',
+        '&:hover': {
+            background: "#f0f0f0",
+        },
     }
 }));
 
 const ThreadButton = ({ id, setThreadOpen, setThreadId, threadOpen }: propType) => {
-    const { getThreadName } = useChats();
+    const { getThreadName, getLastMessage } = useChats();
+    const { getUsernameById } = useUsers();
     const [name, setName] = useState('');
+    const [lastMessage, setLastMessage] = useState<lastMessageObject>({
+        username: '',
+        contents: '',
+        timestamp: ''
+    });
     const { websocket } = useContext(WebsocketContext);
     const classes = useStyles();
 
     useEffect(() => {
         (async () => {
             try {
-                console.log('THREADBUTTON: ', id)
                 const threadName = await getThreadName(id)
-                console.log('THREADNAME: ', threadName)
                 setName(threadName)
+                const lastMessageData = await getLastMessage(id)
+                const username = await getUsernameById(lastMessageData[0].user_id);
+
+                const d = new Date(lastMessageData[0].timestamp);
+                let hours = d.getHours().toString();
+                let minutes = d.getMinutes().toString();
+                if (d.getHours() < 10) {
+                    hours = '0' + hours;
+                }
+                if (d.getMinutes() < 10) {
+                    minutes = '0' + minutes;
+                }
+                const formatedTime = hours + '.' + minutes;
+
+                const lastMessageObject = {
+                    username: username.username,
+                    contents: lastMessageData[0].contents,
+                    timestamp: formatedTime,
+                }
+                setLastMessage(lastMessageObject);
             } catch (e) {
                 console.log(e.message);
             }
@@ -76,7 +105,7 @@ const ThreadButton = ({ id, setThreadOpen, setThreadId, threadOpen }: propType) 
 
     return (
         <>
-            <Button className={classes.button} onClick={openThread}>
+            <ListItem onClick={openThread} className={classes.button} >
                 <ListItemText
                     primary={
                         <>
@@ -91,26 +120,24 @@ const ThreadButton = ({ id, setThreadOpen, setThreadId, threadOpen }: propType) 
                                     variant="subtitle1"
                                     className={classes.timestamp}
                                 >
-                                    hello
+                                    {lastMessage.timestamp}
                                 </Typography>
                             </Grid>
                         </>
                     }
                     secondary={
                         <>
-                            <Grid container justify="flex-start">
-                                <Typography
-                                    component="span"
-                                    variant="body2"
-                                    className={classes.lastMessage}
-                                >
-                                    Chätti
-                                </Typography>
-                            </Grid>
+                            <Typography
+                                component="span"
+                                variant="body2"
+                                className={classes.lastMessage}
+                            >
+                                {lastMessage.username}: {lastMessage.contents}
+                            </Typography>
                         </>
                     }
                 />
-            </Button>
+            </ListItem>
         </>
     )
 }

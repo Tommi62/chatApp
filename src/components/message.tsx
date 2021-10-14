@@ -25,6 +25,7 @@ const useStyles = makeStyles(() => ({
         marginBottom: '0.5rem',
         borderRadius: '1rem',
         padding: '0.5rem',
+        maxWidth: '50%',
     },
     ownMessage: {
         backgroundColor: '#5F4B8BFF',
@@ -32,6 +33,7 @@ const useStyles = makeStyles(() => ({
         marginBottom: '0.5rem',
         borderRadius: '1rem',
         padding: '0.5rem',
+        maxWidth: '50%',
     },
     inline: {
         display: 'inline',
@@ -79,6 +81,7 @@ const Message = ({ message_id, user_id, contents, timestamp, setMessageId, usern
                 setOwnMessage(false);
             }
             setMessageId(message_id);
+            console.log('GIT PUSH PRoblem');
         } catch (e) {
             console.log(e.message);
         }

@@ -78,4 +78,14 @@ const getAllMessagesByThreadId = async (request: ChatRequest, reply: FastifyRepl
   }
 }
 
-module.exports = { getThreadsByUserId, getUsersByThreadId, getThreadNameByThreadId, postMessage, getMessagesByThreadId, getAllMessagesByThreadId }
+const getLastMessageByThreadId = async (request: ChatRequest, reply: FastifyReply) => {
+  const threadId = request.params.id
+  try {
+    const { rows } = await request.db.client.query('SELECT id, contents, timestamp, user_id FROM message WHERE thread_id = $1 AND id = (SELECT MAX(id) FROM message)', [threadId])
+    return rows
+  } catch (err) {
+    throw new Error(err)
+  }
+}
+
+module.exports = { getThreadsByUserId, getUsersByThreadId, getThreadNameByThreadId, postMessage, getMessagesByThreadId, getAllMessagesByThreadId, getLastMessageByThreadId }

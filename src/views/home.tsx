@@ -146,7 +146,7 @@ const Home = ({ history }: propType) => {
                 <Grid container justify="center" direction="column">
                     <Typography component="h1" variant="h2">Welcome</Typography>
                     <List style={{
-                        width: '30vw',
+                        width: '20vw',
                         padding: 0,
                         margin: 'auto',
                         borderStyle: 'solid',

@@ -16,6 +16,7 @@ import { MediaContext } from '../contexts/mediaContext';
 const useStyles = makeStyles((theme) => ({
     appBar: {
         zIndex: theme.zIndex.drawer + 1,
+        backgroundColor: '#5F4B8BFF'
     },
     root: {
         flexGrow: 1,
