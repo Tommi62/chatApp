@@ -20,7 +20,7 @@ type UserRequest = FastifyRequest<{
 
 const getUsers = async (request: FastifyRequest, reply: FastifyReply) => {
   try {
-    const { rows } = await request.db.client.query('SELECT * FROM "user"')
+    const { rows } = await request.db.client.query('SELECT id, username FROM "user"')
     console.log(rows)
     reply.send(rows)
   } catch (err) {

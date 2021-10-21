@@ -1,8 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Grid, List, Typography } from '@material-ui/core';
+import { Button, Grid, List, Typography } from '@material-ui/core';
 import { useContext, useEffect, useState } from 'react';
 import Thread from '../components/thread';
 import ThreadButton from '../components/threadButton';
+import ThreadForm from '../components/threadForm';
 import { MediaContext } from '../contexts/mediaContext';
 import { WebsocketContext } from '../contexts/websocketContext';
 import { useUsers, useChats } from '../hooks/apiHooks';
@@ -35,6 +36,8 @@ const Home = ({ history }: propType) => {
     const [messages, setMessages] = useState<messagesArray[]>([]);
     const [socketThreadId, setSocketThreadId] = useState(0);
     const [updateState, setUpdateState] = useState(Date.now());
+    const [updateThreadButtons, setUpdateThreadButtons] = useState(Date.now());
+    const [createNewChatThread, setCreateNewChatThread] = useState(false);
     let newMessagesArray: messagesArray[] = [];
 
     useEffect(() => {
@@ -55,7 +58,7 @@ const Home = ({ history }: propType) => {
                 console.log(e.message);
             }
         })();
-    }, [user]);
+    }, [user, updateThreadButtons]);
 
     useEffect(() => {
         (async () => {
@@ -124,40 +127,60 @@ const Home = ({ history }: propType) => {
         };
     }, [threadOpen, threadId, updateState]);
 
+    const setCreateNewChatThreadOpen = () => {
+        setCreateNewChatThread(true);
+    }
+
 
     return (
         <>
-            {threadOpen ? (
-                <Grid container direction="row">
-                    <Grid item style={{ width: '30%' }}>
-                        <Grid container style={{ borderTop: '1px solid #5F4B8BFF', marginTop: '1rem' }} >
-                            <List style={{ padding: 0, width: '100%' }}>
+            {createNewChatThread ? (
+                <ThreadForm setCreateNewChatThread={setCreateNewChatThread} setUpdateThreadButtons={setUpdateThreadButtons} />
+            ) : (
+                <>
+                    {threadOpen ? (
+                        <Grid container direction="row">
+                            <Grid item style={{ width: '30%' }}>
+                                <Grid container style={{ borderTop: '1px solid #5F4B8BFF', marginTop: '1rem' }} >
+                                    <List style={{ padding: 0, width: '100%' }}>
+                                        {threads.map((item) => (
+                                            <ThreadButton id={item.thread_id} setThreadOpen={setThreadOpen} setThreadId={setThreadId} threadOpen={threadOpen} threadId={threadId} />
+                                        ))}{' '}
+                                    </List>
+                                </Grid>
+                            </Grid>
+                            <Grid item style={{ width: '70%' }}>
+                                <Thread messages={messages} id={threadId} websocket={websocket} />
+                            </Grid>
+                        </Grid>
+                    ) : (
+                        <Grid container justify="center" direction="column">
+                            <Typography component="h1" variant="h2">Welcome</Typography>
+                            <Grid container item justifyContent="center">
+                                <Button
+                                    onClick={setCreateNewChatThreadOpen}
+                                    color="primary"
+                                    variant="contained"
+                                    style={{ marginTop: '1rem', marginBottom: '1rem' }}
+                                >
+                                    Create a new chat thread
+                                </Button>
+                            </Grid>
+                            <List style={{
+                                width: '20vw',
+                                padding: 0,
+                                margin: 'auto',
+                                borderStyle: 'solid',
+                                borderWidth: '1px 1px 0 1px',
+                                borderColor: '#5F4B8BFF'
+                            }}>
                                 {threads.map((item) => (
-                                    <ThreadButton id={item.thread_id} setThreadOpen={setThreadOpen} setThreadId={setThreadId} threadOpen={threadOpen} />
+                                    <ThreadButton id={item.thread_id} setThreadOpen={setThreadOpen} setThreadId={setThreadId} threadOpen={threadOpen} threadId={threadId} />
                                 ))}{' '}
                             </List>
                         </Grid>
-                    </Grid>
-                    <Grid item style={{ width: '70%' }}>
-                        <Thread messages={messages} id={threadId} websocket={websocket} />
-                    </Grid>
-                </Grid>
-            ) : (
-                <Grid container justify="center" direction="column">
-                    <Typography component="h1" variant="h2">Welcome</Typography>
-                    <List style={{
-                        width: '20vw',
-                        padding: 0,
-                        margin: 'auto',
-                        borderStyle: 'solid',
-                        borderWidth: '1px 1px 0 1px',
-                        borderColor: '#5F4B8BFF'
-                    }}>
-                        {threads.map((item) => (
-                            <ThreadButton id={item.thread_id} setThreadOpen={setThreadOpen} setThreadId={setThreadId} threadOpen={threadOpen} />
-                        ))}{' '}
-                    </List>
-                </Grid>
+                    )}
+                </>
             )}
         </>
     );

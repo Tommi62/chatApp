@@ -12,6 +12,14 @@ type ChatRequest = FastifyRequest<{
   }
 }>
 
+type CreateNewChatRequest = FastifyRequest<{
+  Body: {
+    name: string,
+    user_id: number,
+    user2_id: number,
+  }
+}>
+
 const getThreadsByUserId = async (request: ChatRequest, reply: FastifyReply) => {
   const userId = request.params.id
   try {
@@ -88,4 +96,19 @@ const getLastMessageByThreadId = async (request: ChatRequest, reply: FastifyRepl
   }
 }
 
-module.exports = { getThreadsByUserId, getUsersByThreadId, getThreadNameByThreadId, postMessage, getMessagesByThreadId, getAllMessagesByThreadId, getLastMessageByThreadId }
+const createNewChatThread = async (request: CreateNewChatRequest, reply: FastifyReply) => {
+  const { name, user_id, user2_id } = request.body
+  try {
+    const thread_id = await request.db.client.query('INSERT INTO thread(name) VALUES($1) RETURNING id', [name])
+    console.log('INSERTED ID', thread_id.rows[0].id)
+
+    await request.db.client.query('INSERT INTO chatting(user_id, thread_id) VALUES($1, $2)', [user_id, thread_id.rows[0].id])
+    await request.db.client.query('INSERT INTO chatting(user_id, thread_id) VALUES($1, $2)', [user2_id, thread_id.rows[0].id])
+
+    return { success: true }
+  } catch (err) {
+    throw new Error(err)
+  }
+}
+
+module.exports = { getThreadsByUserId, getUsersByThreadId, getThreadNameByThreadId, postMessage, getMessagesByThreadId, getAllMessagesByThreadId, getLastMessageByThreadId, createNewChatThread }

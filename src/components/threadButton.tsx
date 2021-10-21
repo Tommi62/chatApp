@@ -10,6 +10,7 @@ interface propType {
     setThreadOpen: Function,
     setThreadId: Function,
     threadOpen: Boolean,
+    threadId: number,
 }
 
 interface lastMessageObject {
@@ -47,7 +48,7 @@ const useStyles = makeStyles(() => ({
     }
 }));
 
-const ThreadButton = ({ id, setThreadOpen, setThreadId, threadOpen }: propType) => {
+const ThreadButton = ({ id, setThreadOpen, setThreadId, threadOpen, threadId }: propType) => {
     const { getThreadName, getLastMessage } = useChats();
     const { getUsernameById } = useUsers();
     const [name, setName] = useState('');
@@ -95,11 +96,15 @@ const ThreadButton = ({ id, setThreadOpen, setThreadId, threadOpen }: propType) 
             setThreadOpen(true)
             setThreadId(id)
         } else {
-            setThreadOpen(false)
+            if (threadId === id) {
+                setThreadOpen(false)
+                setThreadId(0)
+            } else {
+                setThreadId(id)
+            }
             if (websocket !== undefined) {
                 websocket.close();
             }
-            setThreadId(0)
         }
     }
 

@@ -81,7 +81,6 @@ const Message = ({ message_id, user_id, contents, timestamp, setMessageId, usern
                 setOwnMessage(false);
             }
             setMessageId(message_id);
-            console.log('GIT PUSH PRoblem');
         } catch (e) {
             console.log(e.message);
         }

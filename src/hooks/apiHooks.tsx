@@ -187,7 +187,24 @@ const useChats = () => {
         }
     };
 
-    return { getThreadIds, getUserIds, getThreadName, postMessage, getMessages, getAllMessages, getLastMessage }
+    const createNewChatThread = async (chatThreadObject: Object) => {
+        const fetchOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: chatThreadObject,
+            credentials: 'include',
+        };
+        try {
+            const result = await doFetch('/new_thread', fetchOptions);
+            return result.success
+        } catch (e) {
+            alert(e.message);
+        }
+    };
+
+    return { getThreadIds, getUserIds, getThreadName, postMessage, getMessages, getAllMessages, getLastMessage, createNewChatThread }
 }
 
 export { useUsers, useChats };

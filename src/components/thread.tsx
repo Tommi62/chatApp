@@ -69,6 +69,8 @@ const Thread = ({ messages, id, websocket }: propType) => {
     useEffect(() => {
         (async () => {
             try {
+                setLoadMore(false);
+                setMessageScroll(false);
                 console.log('messageUpdate')
                 if (messages.length >= 50 && !loadMore) {
                     setShowButton(true);
@@ -84,6 +86,8 @@ const Thread = ({ messages, id, websocket }: propType) => {
     useEffect(() => {
         (async () => {
             try {
+                setUsernames([]);
+                console.log('USERNAMELIST')
                 const userIds = await getUserIds(id);
                 let usernameArray: Array<usernamesArray> = [];
                 for (let i = 0; i < userIds.length; i++) {
@@ -100,7 +104,7 @@ const Thread = ({ messages, id, websocket }: propType) => {
                 console.log(e.message);
             }
         })();
-    }, []);
+    }, [id]);
 
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault();
