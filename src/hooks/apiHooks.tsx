@@ -179,9 +179,9 @@ const useChats = () => {
         }
     };
 
-    const getLastMessage = async (threadId: number) => {
+    const getLastMessage = async (id: number) => {
         try {
-            return await doFetch('/last_message/' + threadId);
+            return await doFetch('/last_message/' + id);
         } catch (e) {
             alert(e.message);
         }

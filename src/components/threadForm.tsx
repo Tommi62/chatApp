@@ -63,7 +63,13 @@ const ThreadForm = ({ setCreateNewChatThread, setUpdateThreadButtons }: propType
         (async () => {
             try {
                 const users = await getUsers();
-                setUsersArray(users);
+                let arrayForUsers = [];
+                for (let i = 0; i < users.length; i++) {
+                    if (users[i].id !== user) {
+                        arrayForUsers.push(users[i]);
+                    }
+                }
+                setUsersArray(arrayForUsers);
             } catch (e) {
                 console.log(e.message);
             }

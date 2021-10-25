@@ -66,25 +66,34 @@ const ThreadButton = ({ id, setThreadOpen, setThreadId, threadOpen, threadId }: 
                 const threadName = await getThreadName(id)
                 setName(threadName)
                 const lastMessageData = await getLastMessage(id)
-                const username = await getUsernameById(lastMessageData[0].user_id);
+                if (lastMessageData.length !== 0) {
+                    const username = await getUsernameById(lastMessageData[0].user_id);
 
-                const d = new Date(lastMessageData[0].timestamp);
-                let hours = d.getHours().toString();
-                let minutes = d.getMinutes().toString();
-                if (d.getHours() < 10) {
-                    hours = '0' + hours;
-                }
-                if (d.getMinutes() < 10) {
-                    minutes = '0' + minutes;
-                }
-                const formatedTime = hours + '.' + minutes;
+                    const d = new Date(lastMessageData[0].timestamp);
+                    let hours = d.getHours().toString();
+                    let minutes = d.getMinutes().toString();
+                    if (d.getHours() < 10) {
+                        hours = '0' + hours;
+                    }
+                    if (d.getMinutes() < 10) {
+                        minutes = '0' + minutes;
+                    }
+                    const formatedTime = hours + '.' + minutes;
 
-                const lastMessageObject = {
-                    username: username.username,
-                    contents: lastMessageData[0].contents,
-                    timestamp: formatedTime,
+                    const lastMessageObject = {
+                        username: username.username + ':',
+                        contents: lastMessageData[0].contents,
+                        timestamp: formatedTime,
+                    }
+                    setLastMessage(lastMessageObject);
+                } else {
+                    const noLastMessageObject = {
+                        username: 'No messages yet.',
+                        contents: '',
+                        timestamp: '',
+                    }
+                    setLastMessage(noLastMessageObject);
                 }
-                setLastMessage(lastMessageObject);
             } catch (e) {
                 console.log(e.message);
             }
@@ -137,7 +146,7 @@ const ThreadButton = ({ id, setThreadOpen, setThreadId, threadOpen, threadId }: 
                                 variant="body2"
                                 className={classes.lastMessage}
                             >
-                                {lastMessage.username}: {lastMessage.contents}
+                                {lastMessage.username} {lastMessage.contents}
                             </Typography>
                         </>
                     }
