@@ -34,11 +34,17 @@ const Home = ({ history }: propType) => {
     const [threadOpen, setThreadOpen] = useState(false)
     const [threadId, setThreadId] = useState(0)
     const [messages, setMessages] = useState<messagesArray[]>([]);
-    const [socketThreadId, setSocketThreadId] = useState(0);
     const [updateState, setUpdateState] = useState(Date.now());
     const [updateThreadButtons, setUpdateThreadButtons] = useState(Date.now());
+    const [updateThreadButtonInfos, setUpdateThreadButtonInfos] = useState(Date.now());
     const [createNewChatThread, setCreateNewChatThread] = useState(false);
-    let newMessagesArray: messagesArray[] = [];
+    const [wsMessage, setWsMessage] = useState({
+        type: '',
+        contents: '',
+        timestamp: new Date(),
+        user_id: 0,
+        thread_id: 0
+    });
 
     useEffect(() => {
         (async () => {
@@ -66,8 +72,7 @@ const Home = ({ history }: propType) => {
                 if (threadId !== 0) {
                     const threadMessages = await getMessages(threadId);
                     const reversedArray = threadMessages.reverse();
-                    newMessagesArray = reversedArray;
-                    setMessages(newMessagesArray);
+                    setMessages(reversedArray);
                 }
             } catch (e) {
                 console.log(e.message);
@@ -77,8 +82,24 @@ const Home = ({ history }: propType) => {
 
     useEffect(() => {
         try {
-            if (threadOpen) {
-                if (websocket === undefined || websocket.readyState === 2 || websocket.readyState === 3 || threadId !== socketThreadId) {
+            if (wsMessage.type !== '' && wsMessage.thread_id === threadId) {
+                const newMessageObject = {
+                    id: Date.now(),
+                    user_id: wsMessage.user_id,
+                    contents: wsMessage.contents,
+                    timestamp: wsMessage.timestamp,
+                }
+                setMessages(messages => [...messages, newMessageObject]);
+            }
+        } catch (e) {
+            console.log(e.message);
+        }
+    }, [wsMessage]);
+
+    useEffect(() => {
+        try {
+            if (threads.length !== 0) {
+                if (websocket === undefined || websocket.readyState === 2 || websocket.readyState === 3) {
                     console.log('READYSTATE ', websocket?.readyState)
                     const socket = new WebSocket('ws://localhost:3001');
 
@@ -86,8 +107,8 @@ const Home = ({ history }: propType) => {
                         console.log('Server is opened.');
                         const client = {
                             type: 'client',
-                            thread_id: threadId,
                             user_id: user,
+                            threads: threads,
                         }
                         socket.send(JSON.stringify(client));
                     });
@@ -96,19 +117,12 @@ const Home = ({ history }: propType) => {
                         if (event.data !== 'ping') {
                             console.log('Message from server ', JSON.parse(event.data).thread_id);
                             const message = JSON.parse(event.data);
-                            if (message.thread_id === threadId) {
-                                const newMessageObject = {
-                                    id: Date.now(),
-                                    user_id: message.user_id,
-                                    contents: message.contents,
-                                    timestamp: message.timestamp,
-                                }
-                                newMessagesArray.push(newMessageObject);
-                                const arrayCopy = [...newMessagesArray];
-                                setMessages(arrayCopy);
+                            if (message.type === 'message') {
+                                setWsMessage(message);
+                                setUpdateThreadButtonInfos(Date.now());
+                            } else {
+                                setTimeout(() => socket.send('pong'), 1000);
                             }
-                        } else {
-                            setTimeout(() => socket.send('pong'), 1000);
                         }
                     });
 
@@ -118,14 +132,13 @@ const Home = ({ history }: propType) => {
                     });
 
                     setWebsocket(socket);
-                    setSocketThreadId(threadId);
                     console.log('NEW SOCKET');
                 }
             }
         } catch (e) {
             console.log(e.message);
         };
-    }, [threadOpen, threadId, updateState]);
+    }, [updateState, threads]);
 
     const setCreateNewChatThreadOpen = () => {
         setCreateNewChatThread(true);
@@ -144,7 +157,14 @@ const Home = ({ history }: propType) => {
                                 <Grid container style={{ borderTop: '1px solid #5F4B8BFF', marginTop: '1rem' }} >
                                     <List style={{ padding: 0, width: '100%' }}>
                                         {threads.map((item) => (
-                                            <ThreadButton id={item.thread_id} setThreadOpen={setThreadOpen} setThreadId={setThreadId} threadOpen={threadOpen} threadId={threadId} />
+                                            <ThreadButton
+                                                id={item.thread_id}
+                                                setThreadOpen={setThreadOpen}
+                                                setThreadId={setThreadId}
+                                                threadOpen={threadOpen}
+                                                threadId={threadId}
+                                                updateThreadButtonInfos={updateThreadButtonInfos}
+                                            />
                                         ))}{' '}
                                     </List>
                                 </Grid>
@@ -175,7 +195,14 @@ const Home = ({ history }: propType) => {
                                 borderColor: '#5F4B8BFF'
                             }}>
                                 {threads.map((item) => (
-                                    <ThreadButton id={item.thread_id} setThreadOpen={setThreadOpen} setThreadId={setThreadId} threadOpen={threadOpen} threadId={threadId} />
+                                    <ThreadButton
+                                        id={item.thread_id}
+                                        setThreadOpen={setThreadOpen}
+                                        setThreadId={setThreadId}
+                                        threadOpen={threadOpen}
+                                        threadId={threadId}
+                                        updateThreadButtonInfos={updateThreadButtonInfos}
+                                    />
                                 ))}{' '}
                             </List>
                         </Grid>

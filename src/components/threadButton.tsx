@@ -11,6 +11,7 @@ interface propType {
     setThreadId: Function,
     threadOpen: Boolean,
     threadId: number,
+    updateThreadButtonInfos: number,
 }
 
 interface lastMessageObject {
@@ -48,7 +49,7 @@ const useStyles = makeStyles(() => ({
     }
 }));
 
-const ThreadButton = ({ id, setThreadOpen, setThreadId, threadOpen, threadId }: propType) => {
+const ThreadButton = ({ id, setThreadOpen, setThreadId, threadOpen, threadId, updateThreadButtonInfos }: propType) => {
     const { getThreadName, getLastMessage } = useChats();
     const { getUsernameById } = useUsers();
     const [name, setName] = useState('');
@@ -98,7 +99,7 @@ const ThreadButton = ({ id, setThreadOpen, setThreadId, threadOpen, threadId }: 
                 console.log(e.message);
             }
         })();
-    }, []);
+    }, [updateThreadButtonInfos]);
 
     const openThread = () => {
         if (!threadOpen) {

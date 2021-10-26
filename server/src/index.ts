@@ -28,9 +28,13 @@ fastify.register(autoload, {
   dir: path.join(__dirname, 'routes')
 })
 
-interface clientArray {
+interface threadsArray {
   thread_id: number,
+}
+
+interface clientArray {
   user_id: number,
+  threads: threadsArray[],
   client: SocketStream,
 }
 
@@ -42,10 +46,10 @@ fastify.get('/', { websocket: true }, (connection: SocketStream /* SocketStream 
       const clientMessage = JSON.parse(message.toString())
 
       if (clientMessage.type === 'client') {
-        console.log('ID: ', clientMessage.thread_id)
+        console.log('Threads: ', clientMessage.threads)
         const clientObject = {
-          thread_id: clientMessage.thread_id,
           user_id: clientMessage.user_id,
+          threads: clientMessage.threads,
           client: connection,
         }
         clients.push(clientObject)
@@ -53,10 +57,14 @@ fastify.get('/', { websocket: true }, (connection: SocketStream /* SocketStream 
         for (let i = clients.length - 1; i > -1; i--) {
           if (clients[i].client.socket._readyState === 3) {
             clients.splice(i, 1);
-          } else if (clients[i].thread_id === clientMessage.thread_id) {
-            console.log('USERIDCLIENT: ', clients[i].user_id)
-            console.log('CONNECTION:', clients[i].client.socket._readyState)
-            clients[i].client.socket.send(message.toString())
+          } else {
+            for (let j = 0; j < clients[i].threads.length; j++) {
+              if (clients[i].threads[j].thread_id === clientMessage.thread_id) {
+                console.log('USERIDCLIENT: ', clients[i].user_id)
+                console.log('CONNECTION:', clients[i].client.socket._readyState)
+                clients[i].client.socket.send(message.toString())
+              }
+            }
           }
         }
       }
