@@ -19,6 +19,8 @@ interface propType {
     messages: messagesArray[],
     id: number,
     websocket: WebSocket | undefined,
+    messageAmount: number,
+    setMessageAmount: Function,
 }
 
 interface usernamesArray {
@@ -27,7 +29,7 @@ interface usernamesArray {
 }
 
 
-const Thread = ({ messages, id, websocket }: propType) => {
+const Thread = ({ messages, id, websocket, messageAmount, setMessageAmount }: propType) => {
     const [message, setMessage] = useState('');
     const [messageId, setMessageId] = useState(0);
     const [showButton, setShowButton] = useState(false);
@@ -35,6 +37,7 @@ const Thread = ({ messages, id, websocket }: propType) => {
     const [moreMessages, setMoreMessages] = useState<messagesArray[]>([])
     const [loadMore, setLoadMore] = useState(false);
     const [messageScroll, setMessageScroll] = useState(false);
+    const [currentThread, setCurrentThread] = useState(0);
     const { user } = useContext(MediaContext);
     const { postMessage, getUserIds, getAllMessages } = useChats();
     const { getUsernameById } = useUsers();
@@ -69,8 +72,12 @@ const Thread = ({ messages, id, websocket }: propType) => {
     useEffect(() => {
         (async () => {
             try {
-                setLoadMore(false);
-                setMessageScroll(false);
+                if (currentThread !== id) {
+                    setLoadMore(false);
+                    setMessageScroll(false);
+                    setMessageAmount(50);
+                }
+                setCurrentThread(id);
                 console.log('messageUpdate')
                 if (messages.length >= 50 && !loadMore) {
                     setShowButton(true);
@@ -134,8 +141,16 @@ const Thread = ({ messages, id, websocket }: propType) => {
     };
 
     const loadAllMessages = async () => {
+        let amount;
+        if (currentThread !== id) {
+            setMessageAmount(50);
+            amount = 50;
+        } else {
+            amount = messageAmount;
+        }
         const allMessages = await getAllMessages(id);
-        allMessages.splice(allMessages.length - 50, 50);
+        console.log('MESSAGE AMOUNT', messageAmount, allMessages);
+        allMessages.splice(allMessages.length - amount, amount);
         setMoreMessages(allMessages);
         setLoadMore(true);
         setShowButton(false);
