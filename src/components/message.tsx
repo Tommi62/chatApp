@@ -4,10 +4,18 @@ import { useContext } from 'react';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { MediaContext } from '../contexts/mediaContext';
+import moment from 'moment';
 
 interface usernamesArray {
     user_id: number,
     username: string,
+}
+
+interface messagesArray {
+    id: number,
+    user_id: number,
+    contents: string,
+    timestamp: Date,
 }
 
 interface propType {
@@ -17,6 +25,8 @@ interface propType {
     timestamp: Date,
     setMessageId: Function,
     usernames: usernamesArray[],
+    index: number,
+    messageArray: messagesArray[],
 }
 
 const useStyles = makeStyles(() => ({
@@ -45,15 +55,24 @@ const useStyles = makeStyles(() => ({
     timestamp: {
         fontSize: '0.7rem',
         marginLeft: '2rem'
+    },
+    dateIndicator: {
+        background: 'rgb(95, 75, 139, .2)',
+        borderRadius: '0.3rem',
+        padding: '0.2rem',
+        marginBottom: '0.5rem',
+        textAlign: 'center',
     }
 }));
 
-const Message = ({ message_id, user_id, contents, timestamp, setMessageId, usernames }: propType) => {
+const Message = ({ message_id, user_id, contents, timestamp, setMessageId, usernames, index, messageArray }: propType) => {
     const classes = useStyles();
     const [username, setUsername] = useState('');
     const [time, setTime] = useState('');
     const [ownMessage, setOwnMessage] = useState(false);
+    const [showDate, setShowDate] = useState(false);
     const { user } = useContext(MediaContext);
+    const formattedTimestamp = moment(timestamp).format('DD.MM.YYYY');
 
     useEffect(() => {
         try {
@@ -61,6 +80,15 @@ const Message = ({ message_id, user_id, contents, timestamp, setMessageId, usern
                 if (usernames[i].user_id === user_id) {
                     setUsername(usernames[i].username);
                 }
+            }
+
+            if (index !== 0) {
+                const formattedPreviousTimestamp = moment(messageArray[index - 1].timestamp).format('DD.MM.YYYY');
+                if (formattedTimestamp !== formattedPreviousTimestamp) {
+                    setShowDate(true);
+                }
+            } else {
+                setShowDate(true);
             }
 
             const d = new Date(timestamp);
@@ -89,7 +117,12 @@ const Message = ({ message_id, user_id, contents, timestamp, setMessageId, usern
 
     return (
         <>
-            <ListItem style={{ width: '100%' }}>
+            <ListItem style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+                {showDate &&
+                    <Grid container justifyContent="center" >
+                        <Typography className={classes.dateIndicator} component="h6" variant="body1">{formattedTimestamp}</Typography>
+                    </Grid>
+                }
                 {ownMessage ? (
                     <Grid container justify="flex-end" >
                         <Grid item className={classes.ownMessage}>

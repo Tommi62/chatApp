@@ -1,4 +1,3 @@
-import { Socket } from "dgram"
 import { FastifyRequest } from "fastify"
 import * as WebSocket from 'ws';
 

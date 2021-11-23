@@ -48,9 +48,9 @@ const Thread = ({ messages, id, websocket, messageAmount, setMessageAmount }: pr
 
     const scrollToBottom = (number: number) => {
         if (number === 1) {
-            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+            messagesEndRef.current?.scrollIntoView()
         } else {
-            messagesEndRef2.current?.scrollIntoView({ behavior: "smooth" })
+            messagesEndRef2.current?.scrollIntoView()
             setMessageScroll(true);
         }
     }
@@ -169,8 +169,17 @@ const Thread = ({ messages, id, websocket, messageAmount, setMessageAmount }: pr
                     }}>
                     {loadMore &&
                         <List>
-                            {moreMessages.map((item) => (
-                                <Message message_id={item.id} user_id={item.user_id} contents={item.contents} timestamp={item.timestamp} setMessageId={setMessageId} usernames={usernames} />
+                            {moreMessages.map((item, index) => (
+                                <Message
+                                    message_id={item.id}
+                                    user_id={item.user_id}
+                                    contents={item.contents}
+                                    timestamp={item.timestamp}
+                                    setMessageId={setMessageId}
+                                    usernames={usernames}
+                                    index={index}
+                                    messageArray={moreMessages}
+                                />
                             ))}{' '}
                             <div ref={messagesEndRef2} />
                         </List>
@@ -180,8 +189,17 @@ const Thread = ({ messages, id, websocket, messageAmount, setMessageAmount }: pr
                     }
                     {usernames.length > 0 &&
                         <List>
-                            {messages.map((item) => (
-                                <Message message_id={item.id} user_id={item.user_id} contents={item.contents} timestamp={item.timestamp} setMessageId={setMessageId} usernames={usernames} />
+                            {messages.map((item, index) => (
+                                <Message
+                                    message_id={item.id}
+                                    user_id={item.user_id}
+                                    contents={item.contents}
+                                    timestamp={item.timestamp}
+                                    setMessageId={setMessageId}
+                                    usernames={usernames}
+                                    index={index}
+                                    messageArray={messages}
+                                />
                             ))}{' '}
                             <div ref={messagesEndRef} />
                         </List>
