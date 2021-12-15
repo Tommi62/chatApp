@@ -1,4 +1,4 @@
-import { Button, Grid, MenuItem, Select, Typography } from "@material-ui/core"
+import { Button, FormControl, Grid, InputLabel, makeStyles, MenuItem, Select, Typography } from "@material-ui/core"
 import { useState } from "react";
 import { useContext, useEffect } from "react";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator"
@@ -16,7 +16,17 @@ interface usersArrayType {
     username: string,
 }
 
+const useStyles = makeStyles(() => ({
+    select: {
+        minWidth: '5rem',
+    },
+    formControl: {
+        marginTop: '0.5rem',
+    }
+}));
+
 const ThreadForm = ({ setCreateNewChatThread, setUpdateThreadButtons }: propTypes) => {
+    const classes = useStyles();
     const { user } = useContext(MediaContext);
     const { createNewChatThread } = useChats();
     const { getUsers } = useUsers();
@@ -93,16 +103,21 @@ const ThreadForm = ({ setCreateNewChatThread, setUpdateThreadButtons }: propType
                         />
                     </Grid>
                     <Grid container item justifyContent="center">
-                        <Select
-                            name="user2"
-                            value={inputs.user2}
-                            label="User"
-                            onChange={handleInputChange}
-                        >
-                            {usersArray.map((item) => (
-                                <MenuItem value={item.id}>{item.username}</MenuItem>
-                            ))}{' '}
-                        </Select>
+                        <FormControl className={classes.formControl}>
+                            <InputLabel>User</InputLabel>
+                            <Select
+                                name="user2"
+                                value={inputs.user2}
+                                label="User"
+                                onChange={handleInputChange}
+                                autoWidth
+                                className={classes.select}
+                            >
+                                {usersArray.map((item) => (
+                                    <MenuItem value={item.id}>{item.username}</MenuItem>
+                                ))}{' '}
+                            </Select>
+                        </FormControl>
                     </Grid>
                     <Grid container item justifyContent="center">
                         <Button

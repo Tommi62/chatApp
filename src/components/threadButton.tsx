@@ -30,7 +30,10 @@ const useStyles = makeStyles(() => ({
         display: 'inline',
     },
     lastMessage: {
-        display: 'inline',
+        display: 'block',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
         fontSize: '0.7rem'
     },
     timestamp: {
@@ -99,7 +102,7 @@ const ThreadButton = ({ id, setThreadOpen, setThreadId, threadOpen, threadId, up
                 console.log(e.message);
             }
         })();
-    }, [updateThreadButtonInfos]);
+    }, [id, updateThreadButtonInfos]);
 
     const openThread = () => {
         if (!threadOpen) {

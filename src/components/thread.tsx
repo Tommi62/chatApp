@@ -115,29 +115,31 @@ const Thread = ({ messages, id, websocket, messageAmount, setMessageAmount }: pr
 
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault();
-        const tzoffset = (new Date()).getTimezoneOffset() * 60000;
-        const localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, -1);
-        console.log('TIMEST: ', localISOTime)
-        const messageObject = JSON.stringify({
-            contents: message,
-            timestamp: localISOTime,
-            user_id: user,
-            thread_id: id,
+        if (message !== '') {
+            const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+            const localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, -1);
+            console.log('TIMEST: ', localISOTime)
+            const messageObject = JSON.stringify({
+                contents: message,
+                timestamp: localISOTime,
+                user_id: user,
+                thread_id: id,
 
-        });
-        const success = await postMessage(messageObject)
-        console.log('SUCCESS: ', success)
-        const webSocketUpdate = {
-            type: 'message',
-            contents: message,
-            timestamp: localISOTime,
-            user_id: user,
-            thread_id: id
+            });
+            const success = await postMessage(messageObject)
+            console.log('SUCCESS: ', success)
+            const webSocketUpdate = {
+                type: 'message',
+                contents: message,
+                timestamp: localISOTime,
+                user_id: user,
+                thread_id: id
+            }
+            if (websocket !== undefined) {
+                websocket.send(JSON.stringify(webSocketUpdate));
+            }
+            setMessage('');
         }
-        if (websocket !== undefined) {
-            websocket.send(JSON.stringify(webSocketUpdate));
-        }
-        setMessage('');
     };
 
     const loadAllMessages = async () => {

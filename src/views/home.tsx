@@ -20,6 +20,11 @@ interface threadsArray {
     thread_id: number
 }
 
+interface sortedThreadsArray {
+    id: number,
+    timestamp: string,
+}
+
 interface messagesArray {
     id: number,
     user_id: number,
@@ -35,6 +40,7 @@ const Home = ({ history }: propType) => {
     const { height } = useWindowDimensions();
     const heightCorrected = height - 64;
     const [threads, setThreads] = useState<threadsArray[]>([]);
+    const [sortedThreads, setSortedThreads] = useState<sortedThreadsArray[]>([]);
     const [threadOpen, setThreadOpen] = useState(false)
     const [threadId, setThreadId] = useState(0)
     const [messages, setMessages] = useState<messagesArray[]>([]);
@@ -70,6 +76,29 @@ const Home = ({ history }: propType) => {
             }
         })();
     }, [user, updateThreadButtons]);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                if (threads.length > 0) {
+                    let idArray = [];
+                    for (let i = 0; i < threads.length; i++) {
+                        const threadMessages = await getMessages(threads[i].thread_id);
+                        const threadIdObject = {
+                            id: threads[i].thread_id,
+                            timestamp: threadMessages.length > 0 ? threadMessages[0].timestamp : '1999-02-06T05:47:00',
+                        };
+                        idArray.push(threadIdObject);
+                    }
+                    idArray.sort((a, b) => (a.timestamp < b.timestamp) ? 1 : ((b.timestamp < a.timestamp) ? -1 : 0));
+                    console.log('IDARRAY', idArray);
+                    setSortedThreads(idArray);
+                }
+            } catch (e) {
+                console.log(e.message);
+            }
+        })();
+    }, [threads, updateThreadButtonInfos]);
 
     useEffect(() => {
         (async () => {
@@ -126,9 +155,9 @@ const Home = ({ history }: propType) => {
                             if (message.type === 'message') {
                                 setWsMessage(message);
                                 setUpdateThreadButtonInfos(Date.now());
-                            } else {
-                                setTimeout(() => socket.send('pong'), 1000);
                             }
+                        } else {
+                            setTimeout(() => socket.send('pong'), 1000);
                         }
                     });
 
@@ -169,9 +198,9 @@ const Home = ({ history }: propType) => {
                             </Button>
                             <Grid container style={{ borderTop: '1px solid #5F4B8BFF', marginTop: '1rem' }} >
                                 <List style={{ padding: 0, width: '100%' }}>
-                                    {threads.map((item) => (
+                                    {sortedThreads.map((item) => (
                                         <ThreadButton
-                                            id={item.thread_id}
+                                            id={item.id}
                                             setThreadOpen={setThreadOpen}
                                             setThreadId={setThreadId}
                                             threadOpen={threadOpen}
