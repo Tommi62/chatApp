@@ -105,7 +105,7 @@ const createNewChatThread = async (request: CreateNewChatRequest, reply: Fastify
     await request.db.client.query('INSERT INTO chatting(user_id, thread_id) VALUES($1, $2)', [user_id, thread_id.rows[0].id])
     await request.db.client.query('INSERT INTO chatting(user_id, thread_id) VALUES($1, $2)', [user2_id, thread_id.rows[0].id])
 
-    return { success: true }
+    return { success: true, id: thread_id.rows[0].id }
   } catch (err) {
     throw new Error(err)
   }

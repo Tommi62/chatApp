@@ -155,6 +155,8 @@ const Home = ({ history }: propType) => {
                             if (message.type === 'message') {
                                 setWsMessage(message);
                                 setUpdateThreadButtonInfos(Date.now());
+                            } else if (message.type === 'newThread') {
+                                setUpdateThreadButtons(Date.now());
                             }
                         } else {
                             setTimeout(() => socket.send('pong'), 1000);
@@ -183,7 +185,7 @@ const Home = ({ history }: propType) => {
     return (
         <>
             {createNewChatThread ? (
-                <ThreadForm setCreateNewChatThread={setCreateNewChatThread} setUpdateThreadButtons={setUpdateThreadButtons} />
+                <ThreadForm setCreateNewChatThread={setCreateNewChatThread} setUpdateThreadButtons={setUpdateThreadButtons} websocket={websocket} />
             ) : (
                 <>
                     <Grid container direction="row" style={{ height: heightCorrected, }} >

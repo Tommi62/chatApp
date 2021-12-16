@@ -198,7 +198,7 @@ const useChats = () => {
         };
         try {
             const result = await doFetch('/new_thread', fetchOptions);
-            return result.success
+            return result
         } catch (e) {
             alert(e.message);
         }

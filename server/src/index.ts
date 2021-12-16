@@ -54,6 +54,16 @@ fastify.get('/', { websocket: true }, (connection: SocketStream /* SocketStream 
         clients.push(clientObject)
       } else {
         for (let i = clients.length - 1; i > -1; i--) {
+          if (clientMessage.type === 'newThread') {
+            const threadIdObject = {
+              thread_id: clientMessage.thread_id
+            }
+            if (clients[i].user_id === clientMessage.user2_id) {
+              clients[i].threads.push(threadIdObject);
+            } else if (clients[i].user_id === clientMessage.user_id) {
+              clients[i].threads.push(threadIdObject);
+            }
+          }
           if (clients[i].client.socket._readyState === 3) {
             clients.splice(i, 1);
           } else {

@@ -4,6 +4,7 @@ import { useContext, useState } from "react";
 import { useEffect } from "react";
 import { WebsocketContext } from "../contexts/websocketContext";
 import { useChats, useUsers } from '../hooks/apiHooks';
+import moment from 'moment';
 
 interface propType {
     id: number,
@@ -72,17 +73,26 @@ const ThreadButton = ({ id, setThreadOpen, setThreadId, threadOpen, threadId, up
                 const lastMessageData = await getLastMessage(id)
                 if (lastMessageData.length !== 0) {
                     const username = await getUsernameById(lastMessageData[0].user_id);
-
-                    const d = new Date(lastMessageData[0].timestamp);
-                    let hours = d.getHours().toString();
-                    let minutes = d.getMinutes().toString();
-                    if (d.getHours() < 10) {
-                        hours = '0' + hours;
+                    const now = moment().startOf('day')
+                    const formatedDate = moment(lastMessageData[0].timestamp).startOf('day');
+                    const difference = now.diff(formatedDate, 'days');
+                    let formatedTime;
+                    if (difference === 0) {
+                        const d = new Date(lastMessageData[0].timestamp);
+                        let hours = d.getHours().toString();
+                        let minutes = d.getMinutes().toString();
+                        if (d.getHours() < 10) {
+                            hours = '0' + hours;
+                        }
+                        if (d.getMinutes() < 10) {
+                            minutes = '0' + minutes;
+                        }
+                        formatedTime = hours + '.' + minutes;
+                    } else if (difference === 1) {
+                        formatedTime = 'Yesterday';
+                    } else {
+                        formatedTime = moment(lastMessageData[0].timestamp).format('DD.MM.YYYY');
                     }
-                    if (d.getMinutes() < 10) {
-                        minutes = '0' + minutes;
-                    }
-                    const formatedTime = hours + '.' + minutes;
 
                     const lastMessageObject = {
                         username: username.username + ':',

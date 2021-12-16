@@ -8,7 +8,8 @@ import useForm from "../hooks/formHooks";
 
 interface propTypes {
     setCreateNewChatThread: Function,
-    setUpdateThreadButtons: Function
+    setUpdateThreadButtons: Function,
+    websocket: WebSocket,
 }
 
 interface usersArrayType {
@@ -25,12 +26,13 @@ const useStyles = makeStyles(() => ({
     }
 }));
 
-const ThreadForm = ({ setCreateNewChatThread, setUpdateThreadButtons }: propTypes) => {
+const ThreadForm = ({ setCreateNewChatThread, setUpdateThreadButtons, websocket }: propTypes) => {
     const classes = useStyles();
     const { user } = useContext(MediaContext);
     const { createNewChatThread } = useChats();
     const { getUsers } = useUsers();
     const [usersArray, setUsersArray] = useState<usersArrayType[]>([]);
+    const [newThreadId, setNewThreadId] = useState(0);
 
     const validators = {
         threadName: ['required', 'minStringLength: 3'],
@@ -53,9 +55,10 @@ const ThreadForm = ({ setCreateNewChatThread, setUpdateThreadButtons }: propType
 
                 });
                 const success = await createNewChatThread(chatThreadObject);
-                console.log('SUCCESS: ', success)
+                console.log('SUCCESS: ', success.success)
+                setNewThreadId(success.id);
+
                 setCreateNewChatThread(false);
-                setUpdateThreadButtons(Date.now());
             } else {
                 alert('Choose a user with whom you want to chat!');
             }
@@ -68,6 +71,25 @@ const ThreadForm = ({ setCreateNewChatThread, setUpdateThreadButtons }: propType
         threadName: '',
         user2: '',
     });
+
+    useEffect(() => {
+        try {
+            if (newThreadId !== 0) {
+                console.log('NEWTHREADID', newThreadId);
+                const webSocketUpdate = {
+                    type: 'newThread',
+                    user_id: user,
+                    user2_id: inputs.user2,
+                    thread_id: newThreadId,
+                }
+                if (websocket !== undefined) {
+                    websocket.send(JSON.stringify(webSocketUpdate));
+                }
+            }
+        } catch (e) {
+            console.log(e.message);
+        }
+    }, [newThreadId]);
 
     useEffect(() => {
         (async () => {
