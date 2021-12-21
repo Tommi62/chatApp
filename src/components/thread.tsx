@@ -2,11 +2,41 @@ import { Button, Grid, List, TextField } from '@material-ui/core';
 import SendIcon from '@material-ui/icons/Send';
 import { IconButton } from '@material-ui/core';
 import { FormEvent, useContext, useEffect, useState } from 'react';
+import { makeStyles } from "@material-ui/core/styles";
 import { MediaContext } from '../contexts/mediaContext';
 import { useChats, useUsers } from '../hooks/apiHooks';
 import Message from '../components/message';
 import useWindowDimensions from '../hooks/windowDimensionsHook';
 import { useRef } from 'react';
+import { useMediaQuery } from 'react-responsive';
+
+const useStyles = makeStyles((theme) => ({
+    textField: {
+        width: '70%',
+        backgroundColor: 'white',
+        borderRadius: '0.5rem',
+        [theme.breakpoints.down(600)]: {
+            marginTop: '0.27rem'
+        },
+    },
+    sendButton: {
+        marginTop: '0.25rem',
+        padding: '12px 0 12px 12px',
+        [theme.breakpoints.down(600)]: {
+            marginTop: 0
+        },
+    },
+    thread: {
+        padding: '2rem 6rem 1.5rem 6rem',
+        backgroundColor: '#E69A8DFF',
+        height: '90%',
+        overflowX: 'hidden',
+        overflowY: 'auto',
+        [theme.breakpoints.down(600)]: {
+            padding: '1rem 1rem 0.5rem 1rem',
+        },
+    }
+}));
 
 interface messagesArray {
     id: number,
@@ -30,6 +60,7 @@ interface usernamesArray {
 
 
 const Thread = ({ messages, id, websocket, messageAmount, setMessageAmount }: propType) => {
+    const classes = useStyles();
     const [message, setMessage] = useState('');
     const [messageId, setMessageId] = useState(0);
     const [showButton, setShowButton] = useState(false);
@@ -42,9 +73,25 @@ const Thread = ({ messages, id, websocket, messageAmount, setMessageAmount }: pr
     const { postMessage, getUserIds, getAllMessages } = useChats();
     const { getUsernameById } = useUsers();
     const { height } = useWindowDimensions();
-    const heightCorrected = height - 64;
+    const [heightCorrected, setHeightCorrected] = useState(height - 64);
     const messagesEndRef = useRef<null | HTMLDivElement>(null)
     const messagesEndRef2 = useRef<null | HTMLDivElement>(null)
+
+    const isMobile = useMediaQuery({
+        query: '(max-width: 600px)'
+    });
+
+    useEffect(() => {
+        try {
+            if (isMobile) {
+                setHeightCorrected(height - 56);
+            } else {
+                setHeightCorrected(height - 64);
+            }
+        } catch (e) {
+            console.log(e.message);
+        }
+    }, [isMobile]);
 
     const scrollToBottom = (number: number) => {
         if (number === 1) {
@@ -161,14 +208,7 @@ const Thread = ({ messages, id, websocket, messageAmount, setMessageAmount }: pr
     return (
         <>
             <Grid container justify="center" direction="column" style={{ height: heightCorrected }}>
-                <Grid item justify="center" style=
-                    {{
-                        padding: '2rem 6rem 1.5rem 6rem',
-                        backgroundColor: '#E69A8DFF',
-                        height: '90%',
-                        overflowX: 'hidden',
-                        overflowY: 'auto'
-                    }}>
+                <Grid item justify="center" className={classes.thread}>
                     {loadMore &&
                         <List>
                             {moreMessages.map((item, index) => (
@@ -207,23 +247,33 @@ const Thread = ({ messages, id, websocket, messageAmount, setMessageAmount }: pr
                         </List>
                     }
                 </Grid>
-                <Grid item container justify="center" direction="column" style={{ height: '10%', backgroundColor: 'lightgray' }}>
+                <Grid item container justify="center" direction="column" style={{ height: '10%', backgroundColor: 'lightgray', display: 'absolute', bottom: 0 }}>
                     <Grid item>
                         <form
                             onSubmit={handleSubmit}
                         >
-
-                            <TextField
-                                value={message}
-                                variant="outlined"
-                                label="Say something!"
-                                onInput={(event) => setMessage((event.target as HTMLInputElement).value)}
-                                style={{ width: '70%', backgroundColor: 'white', borderRadius: '0.5rem' }}
-                            />
+                            {isMobile ? (
+                                <TextField
+                                    value={message}
+                                    variant="outlined"
+                                    label="Say something!"
+                                    onInput={(event) => setMessage((event.target as HTMLInputElement).value)}
+                                    className={classes.textField}
+                                    size="small"
+                                />
+                            ) : (
+                                <TextField
+                                    value={message}
+                                    variant="outlined"
+                                    label="Say something!"
+                                    onInput={(event) => setMessage((event.target as HTMLInputElement).value)}
+                                    className={classes.textField}
+                                />
+                            )}
                             <IconButton
                                 type="submit"
                                 color="default"
-                                style={{ marginTop: '0.15rem' }}
+                                className={classes.sendButton}
                             >
                                 <SendIcon style={{ fill: '#5F4B8BFF' }} />
                             </IconButton>

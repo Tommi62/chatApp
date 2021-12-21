@@ -29,13 +29,17 @@ interface propType {
     messageArray: messagesArray[],
 }
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
     message: {
         backgroundColor: 'lightGrey',
         marginBottom: '0.5rem',
         borderRadius: '1rem',
         padding: '0.5rem',
-        maxWidth: '50%',
+        maxWidth: '60%',
+        [theme.breakpoints.down(600)]: {
+            maxWidth: '85%',
+            marginBottom: 0,
+        },
     },
     ownMessage: {
         backgroundColor: '#5F4B8BFF',
@@ -43,7 +47,11 @@ const useStyles = makeStyles(() => ({
         marginBottom: '0.5rem',
         borderRadius: '1rem',
         padding: '0.5rem',
-        maxWidth: '50%',
+        maxWidth: '60%',
+        [theme.breakpoints.down(600)]: {
+            maxWidth: '85%',
+            marginBottom: 0,
+        },
     },
     inline: {
         display: 'inline',

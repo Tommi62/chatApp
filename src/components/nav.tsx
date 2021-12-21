@@ -16,7 +16,8 @@ import { MediaContext } from '../contexts/mediaContext';
 const useStyles = makeStyles((theme) => ({
     appBar: {
         zIndex: theme.zIndex.drawer + 1,
-        backgroundColor: '#5F4B8BFF'
+        backgroundColor: '#5F4B8BFF',
+        width: '100vw',
     },
     root: {
         flexGrow: 1,
@@ -40,7 +41,7 @@ const useStyles = makeStyles((theme) => ({
         position: 'absolute',
         display: 'flex',
         alignItems: 'center',
-        left: '130px',
+        left: '71px',
         transform: 'translate(-50%)',
     },
 }));
@@ -90,13 +91,6 @@ const Nav = () => {
                                     to="/logout"
                                 >
                                     Logout
-                                </Button>
-                                <Button
-                                    color="inherit"
-                                    component={RouterLink}
-                                    to="/profile"
-                                >
-                                    Profile
                                 </Button>
                             </div>
                         ) : (

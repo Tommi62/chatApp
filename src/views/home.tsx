@@ -1,14 +1,33 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Button, Grid, List, Typography } from '@material-ui/core';
-import { BorderRight } from '@material-ui/icons';
 import { useContext, useEffect, useState } from 'react';
 import Thread from '../components/thread';
 import ThreadButton from '../components/threadButton';
-import ThreadForm from '../components/threadForm';
+import Modal from '../components/modal';
 import { MediaContext } from '../contexts/mediaContext';
 import { WebsocketContext } from '../contexts/websocketContext';
 import { useUsers, useChats } from '../hooks/apiHooks';
 import useWindowDimensions from '../hooks/windowDimensionsHook';
+import { useMediaQuery } from 'react-responsive';
+import { makeStyles } from "@material-ui/core/styles";
+
+const useStyles = makeStyles((theme) => ({
+    newThreadButton: {
+        backgroundColor: '#5F4B8BFF',
+        marginTop: '1rem',
+        '&:hover': {
+            backgroundColor: '#7159a6',
+        },
+        [theme.breakpoints.down(1000)]: {
+            fontSize: '0.8rem',
+            padding: '6px 10px'
+        },
+        [theme.breakpoints.down(600)]: {
+            fontSize: '0.875rem',
+            padding: '6px 16px'
+        },
+    },
+}));
 
 interface propType {
     history: {
@@ -33,12 +52,13 @@ interface messagesArray {
 }
 
 const Home = ({ history }: propType) => {
+    const classes = useStyles();
     const { user, setUser } = useContext(MediaContext);
     const { websocket, setWebsocket } = useContext(WebsocketContext);
     const { getIsLoggedIn } = useUsers();
     const { getThreadIds, getMessages } = useChats();
     const { height } = useWindowDimensions();
-    const heightCorrected = height - 64;
+    const [heightCorrected, setHeightCorrected] = useState(height - 64);
     const [threads, setThreads] = useState<threadsArray[]>([]);
     const [sortedThreads, setSortedThreads] = useState<sortedThreadsArray[]>([]);
     const [threadOpen, setThreadOpen] = useState(false)
@@ -47,8 +67,8 @@ const Home = ({ history }: propType) => {
     const [updateState, setUpdateState] = useState(Date.now());
     const [updateThreadButtons, setUpdateThreadButtons] = useState(Date.now());
     const [updateThreadButtonInfos, setUpdateThreadButtonInfos] = useState(Date.now());
-    const [createNewChatThread, setCreateNewChatThread] = useState(false);
     const [messageAmount, setMessageAmount] = useState(50);
+    const [modalOpen, setModalOpen] = useState(false);
     const [wsMessage, setWsMessage] = useState({
         type: '',
         contents: '',
@@ -56,6 +76,22 @@ const Home = ({ history }: propType) => {
         user_id: 0,
         thread_id: 0
     });
+
+    const isMobile = useMediaQuery({
+        query: '(max-width: 600px)'
+    });
+
+    useEffect(() => {
+        try {
+            if (isMobile) {
+                setHeightCorrected(height - 56);
+            } else {
+                setHeightCorrected(height - 64);
+            }
+        } catch (e) {
+            console.log(e.message);
+        }
+    }, [isMobile]);
 
     useEffect(() => {
         (async () => {
@@ -178,28 +214,30 @@ const Home = ({ history }: propType) => {
     }, [updateState, threads]);
 
     const setCreateNewChatThreadOpen = () => {
-        setCreateNewChatThread(true);
+        setModalOpen(true);
     }
 
 
     return (
         <>
-            {createNewChatThread ? (
-                <ThreadForm setCreateNewChatThread={setCreateNewChatThread} setUpdateThreadButtons={setUpdateThreadButtons} websocket={websocket} />
-            ) : (
-                <>
-                    <Grid container direction="row" style={{ height: heightCorrected, }} >
-                        <Grid item style={{ width: '30%', borderRight: '1px solid #5F4B8BFF' }}>
+            {isMobile ? (
+                <Grid container direction="column" style={{ height: heightCorrected, }} >
+                    {threadOpen ? (
+                        <Grid item >
+                            <Thread messages={messages} id={threadId} websocket={websocket} messageAmount={messageAmount} setMessageAmount={setMessageAmount} />
+                        </Grid>
+                    ) : (
+                        <Grid item>
                             <Button
                                 onClick={setCreateNewChatThreadOpen}
                                 color="primary"
                                 variant="contained"
-                                style={{ marginTop: '1rem', marginBottom: '1rem' }}
+                                className={classes.newThreadButton}
                             >
                                 Create a new chat thread
                             </Button>
                             <Grid container style={{ borderTop: '1px solid #5F4B8BFF', marginTop: '1rem' }} >
-                                <List style={{ padding: 0, width: '100%' }}>
+                                <List style={{ padding: 0, width: '100vw' }}>
                                     {sortedThreads.map((item) => (
                                         <ThreadButton
                                             id={item.id}
@@ -213,19 +251,48 @@ const Home = ({ history }: propType) => {
                                 </List>
                             </Grid>
                         </Grid>
-                        <Grid item style={{ width: '70%' }}>
-                            {threadOpen ? (
-                                <Thread messages={messages} id={threadId} websocket={websocket} messageAmount={messageAmount} setMessageAmount={setMessageAmount} />
-                            ) : (
-                                <Grid container alignItems="center" justify="center" direction="column" >
-                                    <Typography component="h1" variant="h2">Welcome</Typography>
-                                    <Typography component="div" variant="body1">This is Chat App made by Tommi.</Typography>
-                                </Grid>
-                            )}
+                    )}
+                </Grid>
+            ) : (
+                <Grid container direction="row" style={{ height: heightCorrected, }} >
+                    <Grid item style={{ width: '30%', borderRight: '1px solid #5F4B8BFF', maxHeight: heightCorrected, overflowY: 'auto' }}>
+                        <Button
+                            onClick={setCreateNewChatThreadOpen}
+                            color="primary"
+                            variant="contained"
+                            className={classes.newThreadButton}
+                        >
+                            Create a new chat thread
+                        </Button>
+                        <Grid container style={{ borderTop: '1px solid #5F4B8BFF', marginTop: '1rem' }} >
+                            <List style={{ padding: 0, width: '100%' }}>
+                                {sortedThreads.map((item) => (
+                                    <ThreadButton
+                                        id={item.id}
+                                        setThreadOpen={setThreadOpen}
+                                        setThreadId={setThreadId}
+                                        threadOpen={threadOpen}
+                                        threadId={threadId}
+                                        updateThreadButtonInfos={updateThreadButtonInfos}
+                                    />
+                                ))}{' '}
+                            </List>
                         </Grid>
                     </Grid>
-                </>
-            )}
+                    <Grid item style={{ width: '70%' }}>
+                        {threadOpen ? (
+                            <Thread messages={messages} id={threadId} websocket={websocket} messageAmount={messageAmount} setMessageAmount={setMessageAmount} />
+                        ) : (
+                            <Grid container alignItems="center" justify="center" direction="column" >
+                                <Typography component="h1" variant="h2">Welcome</Typography>
+                                <Typography component="div" variant="body1">This is Chat App made by Tommi.</Typography>
+                            </Grid>
+                        )}
+                    </Grid>
+                </Grid>
+            )
+            }
+            <Modal modalOpen={modalOpen} setModalOpen={setModalOpen} websocket={websocket} setThreadOpen={setThreadOpen} setThreadId={setThreadId} />
         </>
     );
 

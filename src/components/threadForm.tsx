@@ -7,9 +7,10 @@ import { useUsers, useChats } from "../hooks/apiHooks";
 import useForm from "../hooks/formHooks";
 
 interface propTypes {
-    setCreateNewChatThread: Function,
-    setUpdateThreadButtons: Function,
     websocket: WebSocket,
+    setModalOpen: Function,
+    setThreadOpen: Function,
+    setThreadId: Function,
 }
 
 interface usersArrayType {
@@ -17,16 +18,30 @@ interface usersArrayType {
     username: string,
 }
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
     select: {
         minWidth: '5rem',
     },
     formControl: {
         marginTop: '0.5rem',
+    },
+    header: {
+        textAlign: 'center',
+        [theme.breakpoints.down(600)]: {
+            fontSize: '1.3rem',
+        },
+    },
+    createButton: {
+        backgroundColor: '#5F4B8BFF',
+        marginTop: '2rem',
+        marginBottom: '0.5rem',
+        '&:hover': {
+            backgroundColor: '#7159a6',
+        },
     }
 }));
 
-const ThreadForm = ({ setCreateNewChatThread, setUpdateThreadButtons, websocket }: propTypes) => {
+const ThreadForm = ({ websocket, setModalOpen, setThreadOpen, setThreadId }: propTypes) => {
     const classes = useStyles();
     const { user } = useContext(MediaContext);
     const { createNewChatThread } = useChats();
@@ -57,8 +72,6 @@ const ThreadForm = ({ setCreateNewChatThread, setUpdateThreadButtons, websocket 
                 const success = await createNewChatThread(chatThreadObject);
                 console.log('SUCCESS: ', success.success)
                 setNewThreadId(success.id);
-
-                setCreateNewChatThread(false);
             } else {
                 alert('Choose a user with whom you want to chat!');
             }
@@ -84,6 +97,9 @@ const ThreadForm = ({ setCreateNewChatThread, setUpdateThreadButtons, websocket 
                 }
                 if (websocket !== undefined) {
                     websocket.send(JSON.stringify(webSocketUpdate));
+                    setThreadOpen(true);
+                    setThreadId(newThreadId);
+                    setModalOpen(false);
                 }
             }
         } catch (e) {
@@ -111,7 +127,7 @@ const ThreadForm = ({ setCreateNewChatThread, setUpdateThreadButtons, websocket 
     return (
         <>
             <Grid container justifyContent="center" direction="column">
-                <Typography variant="h3">Create a new chat thread</Typography>
+                <Typography variant="h4" className={classes.header}>Create a new chat thread</Typography>
                 <ValidatorForm onSubmit={handleSubmit}>
                     <Grid container item justifyContent="center">
                         <TextValidator
@@ -143,7 +159,7 @@ const ThreadForm = ({ setCreateNewChatThread, setUpdateThreadButtons, websocket 
                     </Grid>
                     <Grid container item justifyContent="center">
                         <Button
-                            style={{ marginTop: '2rem', marginBottom: '0.5rem' }}
+                            className={classes.createButton}
                             color="primary"
                             type="submit"
                             variant="contained"

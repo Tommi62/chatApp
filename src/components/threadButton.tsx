@@ -21,7 +21,7 @@ interface lastMessageObject {
     timestamp: any,
 }
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
     text: {
         color: 'white',
         width: '100%',
@@ -49,6 +49,10 @@ const useStyles = makeStyles(() => ({
         cursor: 'pointer',
         '&:hover': {
             background: "#f0f0f0",
+        },
+        [theme.breakpoints.down(600)]: {
+            maxWidth: 'none',
+            width: '100vw',
         },
     }
 }));
