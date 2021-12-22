@@ -2,6 +2,23 @@ import { withRouter } from 'react-router-dom';
 import { Button, Grid, TextField, Typography } from '@material-ui/core';
 import useForm from '../hooks/formHooks';
 import { useUsers } from '../hooks/apiHooks';
+import { makeStyles } from "@material-ui/core/styles";
+
+const useStyles = makeStyles((theme) => ({
+    loginHeader: {
+        [theme.breakpoints.down(600)]: {
+            fontSize: '2rem'
+        },
+    },
+    loginButton: {
+        backgroundColor: '#5F4B8BFF',
+        marginTop: '2rem',
+        marginBottom: '0.5rem',
+        '&:hover': {
+            backgroundColor: '#7159a6',
+        },
+    }
+}));
 
 interface propType {
     history: {
@@ -10,7 +27,7 @@ interface propType {
 }
 
 const LoginForm = ({ history }: propType) => {
-
+    const classes = useStyles();
     const { postLogin } = useUsers();
     const doLogin = async () => {
         try {
@@ -36,7 +53,7 @@ const LoginForm = ({ history }: propType) => {
                 alignItems="center"
                 justify="center"
             >
-                <Typography component="h1" variant="h2" gutterBottom>
+                <Typography className={classes.loginHeader} component="h3" variant="h3" gutterBottom>
                     Login
                 </Typography>
             </Grid>
@@ -71,7 +88,7 @@ const LoginForm = ({ history }: propType) => {
                         <Grid container item>
                             <Button
                                 fullWidth
-                                style={{ marginTop: '2rem', marginBottom: '0.5rem' }}
+                                className={classes.loginButton}
                                 color="primary"
                                 type="submit"
                                 variant="contained"

@@ -119,21 +119,25 @@ const ThreadButton = ({ id, setThreadOpen, setThreadId, threadOpen, threadId, up
     }, [id, updateThreadButtonInfos]);
 
     const openThread = () => {
-        if (!threadOpen) {
-            setThreadOpen(true)
-            setThreadId(id)
-        } else {
-            if (threadId === id) {
-                setThreadOpen(false)
-                setThreadId(0)
-            } else {
+        try {
+            if (!threadOpen) {
+                setThreadOpen(true)
                 setThreadId(id)
+            } else {
+                if (threadId === id) {
+                    setThreadOpen(false)
+                    setThreadId(0)
+                } else {
+                    setThreadId(id)
+                }
+                if (websocket !== undefined) {
+                    websocket.close();
+                }
             }
-            if (websocket !== undefined) {
-                websocket.close();
-            }
+        } catch (e) {
+            console.log(e.message);
         }
-    }
+    };
 
     return (
         <>

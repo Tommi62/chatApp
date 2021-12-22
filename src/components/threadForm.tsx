@@ -50,13 +50,14 @@ const ThreadForm = ({ websocket, setModalOpen, setThreadOpen, setThreadId }: pro
     const [newThreadId, setNewThreadId] = useState(0);
 
     const validators = {
-        threadName: ['required', 'minStringLength: 3'],
+        threadName: ['required', 'minStringLength: 3', 'maxStringLength: 25'],
     };
 
     const errorMessages = {
         threadName: [
             'Required field',
-            'Minimum of 3 characters'
+            'Minimum of 3 characters',
+            'Too many characters!',
         ]
     };
 

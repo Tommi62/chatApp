@@ -32,25 +32,29 @@ interface propType {
 const useStyles = makeStyles((theme) => ({
     message: {
         backgroundColor: 'lightGrey',
-        marginBottom: '0.5rem',
+        marginBottom: 0,
         borderRadius: '1rem',
         padding: '0.5rem',
         maxWidth: '60%',
-        [theme.breakpoints.down(600)]: {
+        [theme.breakpoints.down(1000)]: {
+            maxWidth: '75%',
+        },
+        [theme.breakpoints.down(1000)]: {
             maxWidth: '85%',
-            marginBottom: 0,
         },
     },
     ownMessage: {
         backgroundColor: '#5F4B8BFF',
         color: 'white',
-        marginBottom: '0.5rem',
+        marginBottom: 0,
         borderRadius: '1rem',
         padding: '0.5rem',
         maxWidth: '60%',
+        [theme.breakpoints.down(1000)]: {
+            maxWidth: '75%',
+        },
         [theme.breakpoints.down(600)]: {
             maxWidth: '85%',
-            marginBottom: 0,
         },
     },
     inline: {

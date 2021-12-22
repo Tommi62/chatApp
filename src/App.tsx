@@ -8,6 +8,7 @@ import Home from './views/home';
 import Login from './views/login';
 import Logout from './views/logout';
 import Profile from './views/profile';
+import { useMediaQuery } from 'react-responsive';
 
 const useStyles = makeStyles((theme) => ({
   content: {

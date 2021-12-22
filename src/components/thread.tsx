@@ -9,6 +9,7 @@ import Message from '../components/message';
 import useWindowDimensions from '../hooks/windowDimensionsHook';
 import { useRef } from 'react';
 import { useMediaQuery } from 'react-responsive';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const useStyles = makeStyles((theme) => ({
     textField: {
@@ -27,14 +28,21 @@ const useStyles = makeStyles((theme) => ({
         },
     },
     thread: {
-        padding: '2rem 6rem 1.5rem 6rem',
+        padding: '0 6rem',
         backgroundColor: '#E69A8DFF',
         height: '90%',
         overflowX: 'hidden',
         overflowY: 'auto',
-        [theme.breakpoints.down(600)]: {
-            padding: '1rem 1rem 0.5rem 1rem',
+        [theme.breakpoints.down(1000)]: {
+            padding: '0 1rem',
         },
+    },
+    arrowBack: {
+        position: 'absolute',
+        top: '58px',
+        left: 0,
+        zIndex: 10,
+        padding: 0,
     }
 }));
 
@@ -51,6 +59,8 @@ interface propType {
     websocket: WebSocket | undefined,
     messageAmount: number,
     setMessageAmount: Function,
+    setThreadOpen: Function,
+    setThreadId: Function,
 }
 
 interface usernamesArray {
@@ -59,7 +69,7 @@ interface usernamesArray {
 }
 
 
-const Thread = ({ messages, id, websocket, messageAmount, setMessageAmount }: propType) => {
+const Thread = ({ messages, id, websocket, messageAmount, setMessageAmount, setThreadOpen, setThreadId }: propType) => {
     const classes = useStyles();
     const [message, setMessage] = useState('');
     const [messageId, setMessageId] = useState(0);
@@ -162,51 +172,73 @@ const Thread = ({ messages, id, websocket, messageAmount, setMessageAmount }: pr
 
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault();
-        if (message !== '') {
-            const tzoffset = (new Date()).getTimezoneOffset() * 60000;
-            const localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, -1);
-            console.log('TIMEST: ', localISOTime)
-            const messageObject = JSON.stringify({
-                contents: message,
-                timestamp: localISOTime,
-                user_id: user,
-                thread_id: id,
+        try {
+            if (message !== '') {
+                const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+                const localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, -1);
+                console.log('TIMEST: ', localISOTime)
+                const messageObject = JSON.stringify({
+                    contents: message,
+                    timestamp: localISOTime,
+                    user_id: user,
+                    thread_id: id,
 
-            });
-            const success = await postMessage(messageObject)
-            console.log('SUCCESS: ', success)
-            const webSocketUpdate = {
-                type: 'message',
-                contents: message,
-                timestamp: localISOTime,
-                user_id: user,
-                thread_id: id
+                });
+                const success = await postMessage(messageObject)
+                console.log('SUCCESS: ', success)
+                const webSocketUpdate = {
+                    type: 'message',
+                    contents: message,
+                    timestamp: localISOTime,
+                    user_id: user,
+                    thread_id: id
+                }
+                if (websocket !== undefined) {
+                    websocket.send(JSON.stringify(webSocketUpdate));
+                }
+                setMessage('');
             }
-            if (websocket !== undefined) {
-                websocket.send(JSON.stringify(webSocketUpdate));
-            }
-            setMessage('');
+        } catch (e) {
+            console.log(e.message);
         }
     };
 
     const loadAllMessages = async () => {
-        let amount;
-        if (currentThread !== id) {
-            setMessageAmount(50);
-            amount = 50;
-        } else {
-            amount = messageAmount;
+        try {
+            let amount;
+            if (currentThread !== id) {
+                setMessageAmount(50);
+                amount = 50;
+            } else {
+                amount = messageAmount;
+            }
+            const allMessages = await getAllMessages(id);
+            console.log('MESSAGE AMOUNT', messageAmount, allMessages);
+            allMessages.splice(allMessages.length - amount, amount);
+            setMoreMessages(allMessages);
+            setLoadMore(true);
+            setShowButton(false);
+        } catch (e) {
+            console.log(e.message);
         }
-        const allMessages = await getAllMessages(id);
-        console.log('MESSAGE AMOUNT', messageAmount, allMessages);
-        allMessages.splice(allMessages.length - amount, amount);
-        setMoreMessages(allMessages);
-        setLoadMore(true);
-        setShowButton(false);
-    }
+    };
+
+    const closeThread = () => {
+        try {
+            setThreadOpen(false);
+            setThreadId(0);
+        } catch (e) {
+            console.log(e.message);
+        }
+    };
 
     return (
         <>
+            {isMobile &&
+                <Button className={classes.arrowBack} onClick={closeThread}>
+                    <ArrowBackIcon /> Back
+                </Button>
+            }
             <Grid container justify="center" direction="column" style={{ height: heightCorrected }}>
                 <Grid item justify="center" className={classes.thread}>
                     {loadMore &&
@@ -247,7 +279,7 @@ const Thread = ({ messages, id, websocket, messageAmount, setMessageAmount }: pr
                         </List>
                     }
                 </Grid>
-                <Grid item container justify="center" direction="column" style={{ height: '10%', backgroundColor: 'lightgray', display: 'absolute', bottom: 0 }}>
+                <Grid item container justify="center" direction="column" style={{ height: '10%', backgroundColor: 'lightgray' }}>
                     <Grid item>
                         <form
                             onSubmit={handleSubmit}

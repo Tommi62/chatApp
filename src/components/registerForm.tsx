@@ -4,17 +4,34 @@ import { useUsers } from '../hooks/apiHooks';
 import { Grid, Typography, Button } from '@material-ui/core';
 import { ValidatorForm, TextValidator } from 'react-material-ui-form-validator';
 import { useEffect } from 'react';
-import PropTypes from 'prop-types';
+import { makeStyles } from "@material-ui/core/styles";
+
+const useStyles = makeStyles((theme) => ({
+    registerHeader: {
+        [theme.breakpoints.down(600)]: {
+            fontSize: '2rem'
+        },
+    },
+    registerButton: {
+        backgroundColor: '#5F4B8BFF',
+        marginTop: '2rem',
+        marginBottom: '0.5rem',
+        '&:hover': {
+            backgroundColor: '#7159a6',
+        },
+    }
+}));
 
 interface propType {
     setToggle: Function
 }
 
 const RegisterForm = ({ setToggle }: propType) => {
+    const classes = useStyles();
     const { register, getUserAvailable } = useUsers();
     const validators = {
-        username: ['required', 'minStringLength: 3', 'isAvailable'],
-        password: ['required', 'minStringLength:5'],
+        username: ['required', 'minStringLength: 3', 'maxStringLength: 15', 'isAvailable'],
+        password: ['required', 'minStringLength: 5'],
         confirm: ['required', 'isPasswordMatch'],
     };
 
@@ -22,6 +39,7 @@ const RegisterForm = ({ setToggle }: propType) => {
         username: [
             'Required field',
             'Minimum of 3 characters',
+            'Too many characters!',
             'Username is not available',
         ],
         password: ['Required field', 'Minimum of 5 characters'],
@@ -78,7 +96,7 @@ const RegisterForm = ({ setToggle }: propType) => {
                 alignItems="center"
                 justify="center"
             >
-                <Typography component="h1" variant="h2" gutterBottom>
+                <Typography className={classes.registerHeader} component="h3" variant="h3" gutterBottom>
                     Register
                 </Typography>
             </Grid>
@@ -126,8 +144,8 @@ const RegisterForm = ({ setToggle }: propType) => {
 
                         <Grid container item>
                             <Button
-                                style={{ marginTop: '2rem', marginBottom: '0.5rem' }}
                                 fullWidth
+                                className={classes.registerButton}
                                 color="primary"
                                 type="submit"
                                 variant="contained"
@@ -140,10 +158,6 @@ const RegisterForm = ({ setToggle }: propType) => {
             </Grid>
         </Grid>
     );
-};
-
-RegisterForm.propTypes = {
-    setToggle: PropTypes.func,
 };
 
 export default RegisterForm;
